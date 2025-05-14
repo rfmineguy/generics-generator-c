@@ -156,4 +156,24 @@ replacement_item* replacement_get(replacement* repl, const char* cursor) {
 	}
 	return NULL;
 }
+
+char* read_file(const char* filepath) {
+	FILE* f = fopen(filepath, "r");
+	assert(f, {
+		fprintf(stderr, "Failed to open '%s'\n", filepath);
+	});
+	fseek(f, 0, SEEK_END);
+	size_t size = ftell(f);
+	fseek(f, 0, SEEK_SET);
+
+	char* buf = (char*)malloc(size);
+	assert(fread(buf, 1, size, f) == size, { 
+		fclose(f);
+		free(buf);
+		fprintf(stderr, "Failed to read '%s'\n", filepath); 
+	});
+
+	fclose(f);
+	return buf;
+}
 #endif
