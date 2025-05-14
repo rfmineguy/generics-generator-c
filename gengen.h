@@ -97,6 +97,25 @@ void template_addfile(ctemplate* tplt, const char* templatepath, const char* tem
 	}
 	tplt->template_files[tplt->template_files_count++] = file;
 }
+
+/* 
+ * @complexity 	   :   O(1) in all cases
+ * @desc 			 	   : 	 Adds a dependent template to this template
+ * @param tplt 	   : 	 Pointer to the template being modified
+ * @param dep_tplt :   The template that this one depends on
+ * @note 					 :   For future, not used at the moment
+ */
+void template_adddep(ctemplate* tplt, ctemplate dep_tplt) {
+	if (tplt->dep_count == 0) {
+		tplt->dep = (ctemplate*)calloc(tplt->dep_cap, sizeof(ctemplate));
+	}
+	if (tplt->dep_count + 1 >= tplt->dep_cap) {
+		tplt->dep = (ctemplate*)realloc(tplt->dep, tplt->dep_cap * 2);
+		tplt->dep_cap *= 2;
+	}
+	tplt->dep[tplt->dep_count++] = dep_tplt;
+}
+
 /*
  * @complexity 	   :   O(1) in all cases
  * @desc 			 	   : 	 Adds a dependent template to this template
@@ -114,5 +133,27 @@ void replacement_add(replacement* repl, const char* needle, const char* with) {
 	}
 	replacement_item rep = {.needle = needle, .with = with};
 	repl->replacements[repl->replacements_count++] = rep;
+}
+
+/*
+ * Time Complexity
+ * O(n*m) where 
+ * 			n is the number of replacements
+ * 			m is the length of those replacements
+ *
+ * @desc          Looks for the replacement for a given cursor position
+ * @param repl    The replacement context to search in
+ * @param cursor  The cursor position to search from
+ * @return 		 		NULL if no replacement exists for the cursor position
+ * 								pointer to replacement item that is used for the cursor position
+ */
+replacement_item* replacement_get(replacement* repl, const char* cursor) {
+	for (int i = 0; i < repl->replacements_count; i++) {
+		replacement_item *item = &repl->replacements[i];
+		size_t len = strlen(item->needle);
+		if (strncmp(cursor, item->needle, len) == 0)
+			return item;
+	}
+	return NULL;
 }
 #endif
