@@ -176,4 +176,86 @@ char* read_file(const char* filepath) {
 	fclose(f);
 	return buf;
 }
+
+void generator_run(generator_settings settings, ctemplate ctemplate, replacement replacement_) {
+	// 1. Read in the template file
+	static char path[PATH_MAX];
+	static char realpath_outpath[PATH_MAX];
+	static char outfilepath[PATH_MAX];
+	for (int i = 0; i < ctemplate.template_files_count; i++) {
+		template_file tf = ctemplate.template_files[i];
+		struct stat buffer;
+		// Look in the search paths until its found
+		int j = 0;
+		for (j = 0; j < settings.path_count; j++) {
+			path[0] = 0;
+			const char* search_path = settings.search_paths[j];
+			assert(realpath(search_path, path) != NULL, {
+				continue;
+			});
+			strncat(path, "/", PATH_MAX);
+			strncat(path, tf.infilename, PATH_MAX);
+			assert(stat(path, &buffer) == 0, {
+				// printf("File: '%s' does not exist here\n", path);
+				continue;
+			})
+			printf("valid: %s\n", path);
+			break;
+		}
+		if (j == settings.path_count) {
+			fprintf(stderr, "No template file '%s'\n", tf.infilename);
+			continue;
+		}
+
+		assert(realpath(settings.outdir, realpath_outpath) != NULL, {
+			printf("Failed:: path = %s\n", path);
+			continue;
+		});
+
+		// Do any replacement needed for the output filepath, given the
+		//    set of replacements given in 'replacement_'
+		strncpy(outfilepath, realpath_outpath, PATH_MAX);
+		strncat(outfilepath, "/", PATH_MAX);
+		const char* cursorfp = tf.outfilename_fmt;
+		replacement_item* found = NULL;
+		while (*cursorfp) {
+			if ((found = replacement_get(&replacement_, cursorfp))) {
+				strncat(outfilepath, found->with, PATH_MAX);
+				cursorfp += strlen(found->needle);
+			}
+			else {
+				strncat(outfilepath, cursorfp, 1);
+				cursorfp++;
+			}
+		}
+
+		printf("outfilepath: %s\n", outfilepath);
+		FILE* outputfile = fopen(outfilepath, "w");
+		if (!outputfile) {
+			fprintf(stderr, "Couldn't create %s for reason: %s\n", outfilepath, strerror(errno));
+			fclose(outputfile);
+			continue;
+		}
+
+		const char* content = read_file(path);
+		const char* cursor = content;
+
+		while (*cursor) {
+			if ((found = replacement_get(&replacement_, cursor))) {
+				// printf("Found replacement for needle: %s\n", found->needle);
+				printf("%s", found->with);
+				cursor += strlen(found->needle);
+				fprintf(outputfile, "%s", found->with);
+			}
+			else {
+				printf("%c", *cursor);
+				fprintf(outputfile, "%c", *cursor);
+				cursor += 1;
+			}
+		}
+
+		free((char*)content);
+	}
+}
+
 #endif
