@@ -78,4 +78,23 @@ void 	 generator_run(generator_settings, ctemplate, replacement);
 
 #define GENGEN_IMPLEMENTATION
 #ifdef GENGEN_IMPLEMENTATION
+/*
+ * Time Complexity
+ * O(1) in all cases
+ * @desc 			         Adds a template file to the given template, and describes the output fileformat
+ * @param tplt         Pointer to the template being modified
+ * @param templatepath Path to the template file in your project
+ * @param templatefmt  The format of the output file's name
+ */
+void template_addfile(ctemplate* tplt, const char* templatepath, const char* templatefmt) {
+	template_file file = (template_file){templatepath, templatefmt};
+	if (tplt->template_files_count == 0) {
+		tplt->template_files = (template_file*)calloc(tplt->template_files_cap, sizeof(ctemplate));
+	}
+	else if (tplt->template_files_count + 1 >= tplt->template_files_cap) {
+		tplt->template_files = (template_file*)realloc(tplt->template_files, tplt->template_files_cap * 2);
+		tplt->template_files_cap *= 2;
+	}
+	tplt->template_files[tplt->template_files_count++] = file;
+}
 #endif
