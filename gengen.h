@@ -97,4 +97,22 @@ void template_addfile(ctemplate* tplt, const char* templatepath, const char* tem
 	}
 	tplt->template_files[tplt->template_files_count++] = file;
 }
+/*
+ * @complexity 	   :   O(1) in all cases
+ * @desc 			 	   : 	 Adds a dependent template to this template
+ * @param tplt 	   : 	 Pointer to the template being modified
+ * @param dep_tplt :   The template that this one depends on
+ * @note 					 :   For future, not used at the moment
+ */
+void replacement_add(replacement* repl, const char* needle, const char* with) {
+	if (repl->replacements_count == 0) {
+		repl->replacements = (replacement_item*)calloc(repl->replacements_capacity, sizeof(replacement));
+	}
+	if (repl->replacements_count + 1 >= repl->replacements_capacity) {
+		repl->replacements = (replacement_item*)realloc(repl->replacements, repl->replacements_capacity * 2);
+		repl->replacements_capacity *= 2;
+	}
+	replacement_item rep = {.needle = needle, .with = with};
+	repl->replacements[repl->replacements_count++] = rep;
+}
 #endif
