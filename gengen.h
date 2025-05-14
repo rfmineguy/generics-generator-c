@@ -75,3 +75,7 @@ replacement_item*   replacement_get(replacement*, const char*);
 void 	 generator_run(generator_settings, ctemplate, replacement);
 
 #endif
+
+#define GENGEN_IMPLEMENTATION
+#ifdef GENGEN_IMPLEMENTATION
+#endif
