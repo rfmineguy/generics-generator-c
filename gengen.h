@@ -9,6 +9,15 @@
 #include <time.h>
 
 typedef struct {
+	const char *symbol, *as;
+} forward_item;
+#define fwd(...) (forward_item) {__VA_ARGS__}
+
+typedef struct {
+	forward_item *fwd_items;
+	size_t fwd_items_count, fwd_items_capacity;
+} forward_table;
+typedef struct {
 	size_t count;
 	const char* data;
 } string_view;
