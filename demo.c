@@ -2,15 +2,15 @@
 #include "gengen.h"
 
 int main() {
-	ctemplate linkedlist = template_create("linkedlist");
+	ctemplate linkedlist = template_create();
 	template_addfile    (&linkedlist, "linked_list.htpl", "linked_list_$T.h");
 	template_addfile    (&linkedlist, "linked_list.ctpl", "linked_list_$T.c");
 
-	ctemplate binarytree = template_create("binarytree");
+	ctemplate binarytree = template_create();
 	template_addfile    (&binarytree, "binary_tree.htpl", "binary_tree_^KEY_^VAL.h");
 	template_addfile    (&binarytree, "binary_tree.ctpl", "binary_tree_^KEY_^VAL.c");
 
-	ctemplate queue  	  = template_create("queue");
+	ctemplate queue  	  = template_create();
 	template_addfile    (&queue, "queue.htpl", "queue_^T.h");
 	template_addfile    (&queue, "queue.ctpl", "queue_^T.c");
 	template_adddep 		(&queue, linkedlist);
@@ -51,6 +51,15 @@ int main() {
 
 	generator_run(settings_custom(.search_paths=paths("demo_templates", "."), .outdir="."), linkedlist, ll_int);
 	generator_run(settings_custom(.search_paths=paths("demo_templates", "."), .outdir="."), linkedlist, ll_string);
-	generator_run(settings_custom(.search_paths=paths("demo_templates", "."), .outdir="."), binarytree, bt_int);
-	generator_run(settings_custom(.search_paths=paths("demo_templates", "."), .outdir="."), queue,  		queue_int);
+	// generator_run(settings_custom(.search_paths=paths("demo_templates", "."), .outdir="."), binarytree, bt_int);
+	// generator_run(settings_custom(.search_paths=paths("demo_templates", "."), .outdir="."), queue,  		queue_int);
+
+	template_free(&linkedlist);
+	template_free(&binarytree);
+	template_free(&queue);
+	replacement_free(&ll_int);
+	replacement_free(&ll_string);
+	replacement_free(&bt_int);
+	replacement_free(&queue_int);
 }
+
