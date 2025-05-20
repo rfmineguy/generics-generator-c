@@ -26,10 +26,10 @@ typedef struct ctemplate {
 	const char* template_name;
 
 	template_file* template_files;
-	int template_files_count, template_files_cap;
+	size_t template_files_count, template_files_cap;
 
 	struct ctemplate* dep;
-	int dep_count, dep_cap;
+	size_t dep_count, dep_cap;
 } ctemplate;
 #define template_create(name) (ctemplate) {.template_name = name, .template_files = NULL, .template_files_count = 0, .template_files_cap = 10}
 
@@ -39,7 +39,7 @@ typedef struct {
 
 typedef struct {
 	replacement_item *replacements;
-	int replacements_count, replacements_capacity;
+	size_t replacements_count, replacements_capacity;
 } replacement;
 #define replacement_create() (replacement){.replacements = NULL, .replacements_count = 0, .replacements_capacity = 10}
 
@@ -55,7 +55,7 @@ typedef struct str_ll {
 typedef const char* path;
 typedef struct generator_settings {
 	path *search_paths;
-	int path_count;
+	size_t path_count;
 	const char* outdir;
 } generator_settings;
 #define settings_default() (generator_settings) {.search_path={"."}}
@@ -68,15 +68,40 @@ void 	 strll_free(str_ll*);
 void   template_addfile(ctemplate*, const char*, const char*);
 void 	 template_adddep(ctemplate*, ctemplate);
 void   template_replacement(ctemplate*, const char*, const char*, const char*);
+ctemplate template_create();
+void      template_free(ctemplate*);
 
 void    						replacement_add(replacement*, const char*, const char*);
 replacement_item*   replacement_get(replacement*, const char*);
+replacement       replacement_create();
+void              replacement_free(replacement*);
 
 void 	 generator_run(generator_settings, ctemplate, replacement);
 
 #endif
 
+#define GENGEN_IMPLEMENTATION
 #ifdef GENGEN_IMPLEMENTATION
+
+/*
+ * Time Complexity
+ * O(1) in all cases
+ * @desc 			  Creates and initializes a ctemplate for use later
+ * */
+ctemplate template_create() {
+  return (ctemplate) {.template_name = "unused", .template_files = NULL, .template_files_count = 0, .template_files_cap = 10};
+}
+
+/*
+ * Time Complexity
+ * O(1) in all cases
+ * @desc 			  Free the internal memory used by the template
+ * @param tplt  Pointer to the template being freed
+ */
+void template_free(ctemplate* tplt) {
+	free(tplt->template_files);
+}
+
 /*
  * Time Complexity
  * O(1) in all cases
@@ -113,6 +138,14 @@ void template_adddep(ctemplate* tplt, ctemplate dep_tplt) {
 		tplt->dep_cap *= 2;
 	}
 	tplt->dep[tplt->dep_count++] = dep_tplt;
+}
+
+replacement replacement_create() {
+	return (replacement){.replacements = NULL, .replacements_count = 0, .replacements_capacity = 10};
+}
+
+void replacement_free(replacement* repl) {
+	free(repl->replacements);
 }
 
 /*
