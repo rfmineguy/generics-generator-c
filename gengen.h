@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <time.h>
 
 typedef struct {
 	size_t count;
@@ -193,11 +194,14 @@ char* read_file(const char* filepath) {
 		fprintf(stderr, "Failed to open '%s'\n", filepath);
 	});
 	fseek(f, 0, SEEK_END);
-	size_t size = ftell(f);
+	long size = ftell(f);
+	assert(size != -1, {
+		fprintf(stderr, "Failed to ftell file '%s'. Reason: %s\n", filepath, strerror(errno));
+	})
 	fseek(f, 0, SEEK_SET);
 
-	char* buf = (char*)malloc(size);
-	assert(fread(buf, 1, size, f) == size, { 
+	char* buf = (char*)malloc((size_t)size);
+	assert(fread(buf, 1, (unsigned long)size, f) == size, { 
 		fclose(f);
 		free(buf);
 		fprintf(stderr, "Failed to read '%s'\n", filepath); 
@@ -214,8 +218,9 @@ void generator_run(generator_settings settings, ctemplate ctemplate, replacement
 	static char outfilepath[PATH_MAX];
 	for (int i = 0; i < ctemplate.template_files_count; i++) {
 		template_file tf = ctemplate.template_files[i];
-		struct stat buffer;
-		// Look in the search paths until its found
+		struct stat buffer, buffer2;
+
+		// Search for specified template file
 		int j = 0;
 		for (j = 0; j < settings.path_count; j++) {
 			path[0] = 0;
@@ -226,14 +231,12 @@ void generator_run(generator_settings settings, ctemplate ctemplate, replacement
 			strncat(path, "/", PATH_MAX);
 			strncat(path, tf.infilename, PATH_MAX);
 			assert(stat(path, &buffer) == 0, {
-				// printf("File: '%s' does not exist here\n", path);
 				continue;
 			})
-			printf("valid: %s\n", path);
 			break;
 		}
 		if (j == settings.path_count) {
-			fprintf(stderr, "No template file '%s'\n", tf.infilename);
+			fprintf(stderr, "\033[33mWarn: Ignoring template file '%s'. Not found.\n", tf.infilename);
 			continue;
 		}
 
@@ -259,7 +262,27 @@ void generator_run(generator_settings settings, ctemplate ctemplate, replacement
 			}
 		}
 
-		printf("outfilepath: %s\n", outfilepath);
+		// Figure out if the file needs to be regenerated or not
+		if (stat(path, &buffer2) == -1) {
+			printf("Error: Infile stat failed\n");
+			continue;
+		}
+
+		if (stat(outfilepath, &buffer) == -1) {
+			printf("\033[32mNotice: Regenerating '%s'\n", outfilepath);
+		}
+		else {
+			struct timespec outfile_modified = buffer.st_mtimespec;
+			struct timespec infile_modified = buffer2.st_mtimespec;
+		  if (infile_modified.tv_sec >= outfile_modified.tv_sec ||
+        (infile_modified.tv_sec == outfile_modified.tv_sec && infile_modified.tv_nsec >= outfile_modified.tv_nsec)) {
+				printf("\033[32mNotice: Regenerating '%s'\n", outfilepath);
+			} else {
+        continue;
+			}
+		}
+
+		// Begin generating output file
 		FILE* outputfile = fopen(outfilepath, "w");
 		if (!outputfile) {
 			fprintf(stderr, "Couldn't create %s for reason: %s\n", outfilepath, strerror(errno));
@@ -272,17 +295,15 @@ void generator_run(generator_settings settings, ctemplate ctemplate, replacement
 
 		while (*cursor) {
 			if ((found = replacement_get(&replacement_, cursor))) {
-				// printf("Found replacement for needle: %s\n", found->needle);
-				printf("%s", found->with);
 				cursor += strlen(found->needle);
 				fprintf(outputfile, "%s", found->with);
 			}
 			else {
-				printf("%c", *cursor);
 				fprintf(outputfile, "%c", *cursor);
 				cursor += 1;
 			}
 		}
+		printf("\033[32mNotice: Regenerated '%s'\n", outfilepath);
 
 		free((char*)content);
 	}
