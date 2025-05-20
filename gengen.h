@@ -61,20 +61,20 @@ typedef struct generator_settings {
 #define paths(...) (path[]){__VA_ARGS__}, .path_count = (sizeof((path[]){__VA_ARGS__})/sizeof(path))
 
 void   strll_pushback(str_ll*, string_view);
-void 	 strll_free(str_ll*);
+void   strll_free(str_ll*);
 
-void   template_addfile(ctemplate*, const char*, const char*);
-void 	 template_adddep(ctemplate*, ctemplate);
-void   template_replacement(ctemplate*, const char*, const char*, const char*);
 ctemplate template_create();
 void      template_free(ctemplate*);
+void      template_addfile(ctemplate*, const char*, const char*);
+void      template_adddep(ctemplate*, ctemplate);
+void      template_replacement(ctemplate*, const char*, const char*, const char*);
 
-void    						replacement_add(replacement*, const char*, const char*);
-replacement_item*   replacement_get(replacement*, const char*);
 replacement       replacement_create();
 void              replacement_free(replacement*);
+void              replacement_add(replacement*, const char*, const char*);
+replacement_item* replacement_get(replacement*, const char*);
 
-void 	 generator_run(generator_settings, ctemplate, replacement);
+void    generator_run(generator_settings, ctemplate, replacement);
 
 #endif
 
