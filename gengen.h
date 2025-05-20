@@ -31,7 +31,6 @@ typedef struct ctemplate {
 	struct ctemplate* dep;
 	size_t dep_count, dep_cap;
 } ctemplate;
-#define template_create(name) (ctemplate) {.template_name = name, .template_files = NULL, .template_files_count = 0, .template_files_cap = 10}
 
 typedef struct {
 	const char *needle, *with;
@@ -41,7 +40,6 @@ typedef struct {
 	replacement_item *replacements;
 	size_t replacements_count, replacements_capacity;
 } replacement;
-#define replacement_create() (replacement){.replacements = NULL, .replacements_count = 0, .replacements_capacity = 10}
 
 typedef struct str_ll_node {
 	string_view data;
