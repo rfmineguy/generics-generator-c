@@ -17,6 +17,16 @@ typedef struct {
 	forward_item *fwd_items;
 	size_t fwd_items_count, fwd_items_capacity;
 } forward_table;
+
+typedef struct {
+	const char *needle, *with;
+} replacement_item;
+
+typedef struct {
+	replacement_item *replacements;
+	size_t replacements_count, replacements_capacity;
+} replacement;
+
 typedef struct {
 	size_t count;
 	const char* data;
