@@ -82,6 +82,10 @@ void              replacement_free(replacement*);
 void              replacement_add(replacement*, const char*, const char*);
 replacement_item* replacement_get(replacement*, const char*);
 
+forward_table forward_table_create();
+void          forward_table_free(forward_table*);
+void          forward_table_forward(forward_table*, forward_item);
+
 void    generator_run(generator_settings, ctemplate, replacement);
 
 #endif
@@ -193,6 +197,25 @@ replacement_item* replacement_get(replacement* repl, const char* cursor) {
 			return item;
 	}
 	return NULL;
+}
+
+forward_table forward_table_create() {
+	return (forward_table){.fwd_items = NULL, .fwd_items_count = 0, .fwd_items_capacity = 10};
+}
+
+void forward_table_free(forward_table* fwd_table) {
+	free(fwd_table->fwd_items);
+}
+
+void forward_table_forward(forward_table* fwd_table, forward_item fwd_item) {
+	if (fwd_table->fwd_items_count == 0) {
+		fwd_table->fwd_items = (forward_item*)calloc(fwd_table->fwd_items_capacity, sizeof(forward_item));
+	}
+	if (fwd_table->fwd_items_count + 1 >= fwd_table->fwd_items_capacity) {
+		fwd_table->fwd_items = (forward_item*)realloc(fwd_table->fwd_items, fwd_table->fwd_items_capacity * 2);
+		fwd_table->fwd_items_capacity *= 2;
+	}
+	fwd_table->fwd_items[fwd_table->fwd_items_count++] = fwd_item;
 }
 
 char* read_file(const char* filepath) {
