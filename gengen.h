@@ -332,7 +332,7 @@ void generator_run(generator_settings settings, ctemplate ctemplate, replacement
 		// Figure out if the file needs to be regenerated or not
 		if (stat(path, &buffer2) == -1) {
 			printf("Error: Infile stat failed\n");
-			continue;
+			goto skip_dependency_gen;
 		}
 
 		if (stat(outfilepath, &buffer) == -1) {
@@ -345,34 +345,45 @@ void generator_run(generator_settings settings, ctemplate ctemplate, replacement
         (infile_modified.tv_sec == outfile_modified.tv_sec && infile_modified.tv_nsec >= outfile_modified.tv_nsec)) {
 				printf("\033[32mNotice: Regenerating '%s'\n", outfilepath);
 			} else {
-        continue;
+				goto skip_dependency_gen;
 			}
 		}
 
-		// Begin generating output file
-		FILE* outputfile = fopen(outfilepath, "w");
-		if (!outputfile) {
-			fprintf(stderr, "Couldn't create %s for reason: %s\n", outfilepath, strerror(errno));
-			fclose(outputfile);
-			continue;
+		{
+			// Begin generating output file
+			FILE* outputfile = fopen(outfilepath, "w");
+			if (!outputfile) {
+				fprintf(stderr, "Couldn't create %s for reason: %s\n", outfilepath, strerror(errno));
+				fclose(outputfile);
+				continue;
+			}
+
+			const char* content = read_file(path);
+			const char* cursor = content;
+
+			while (*cursor) {
+				if ((found = replacement_get(&replacement_, cursor))) {
+					cursor += strlen(found->needle);
+					fprintf(outputfile, "%s", found->with);
+				}
+				else {
+					fprintf(outputfile, "%c", *cursor);
+					cursor += 1;
+				}
+			}
+			printf("\033[32mNotice: Regenerated '%s'\n", outfilepath);
+
+			free((char*)content);
 		}
 
-		const char* content = read_file(path);
-		const char* cursor = content;
-
-		while (*cursor) {
-			if ((found = replacement_get(&replacement_, cursor))) {
-				cursor += strlen(found->needle);
-				fprintf(outputfile, "%s", found->with);
-			}
-			else {
-				fprintf(outputfile, "%c", *cursor);
-				cursor += 1;
-			}
+skip_dependency_gen:
+		for (int i = 0; i < ctemplate.deps_count; i++) {
+			forward_table fwd = ctemplate.deps[i].fwd_table;
+			replacement parent = replacement_;
+			replacement r = replacement_forward(ctemplate.deps[i].template_.replacement, parent);
+			generator_run(settings, ctemplate.deps[i].template_, r);
+			replacement_free(&r);
 		}
-		printf("\033[32mNotice: Regenerated '%s'\n", outfilepath);
-
-		free((char*)content);
 	}
 }
 
