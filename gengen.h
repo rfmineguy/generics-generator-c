@@ -71,9 +71,6 @@ typedef struct generator_settings {
 #define settings_custom(...) (generator_settings) {__VA_ARGS__}
 #define paths(...) (path[]){__VA_ARGS__}, .path_count = (sizeof((path[]){__VA_ARGS__})/sizeof(path))
 
-void   strll_pushback(str_ll*, string_view);
-void   strll_free(str_ll*);
-
 ctemplate template_create();
 void      template_free(ctemplate*);
 void      template_addfile(ctemplate*, const char*, const char*);
