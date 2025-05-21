@@ -1,2 +1,4 @@
 tests/unit/main*
 tests/out/
+
+tests/integration/output/
