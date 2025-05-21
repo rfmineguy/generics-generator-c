@@ -42,33 +42,24 @@ typedef struct {
 	const char *infilename, *outfilename_fmt;
 } template_file;
 
+struct dependency;
 typedef struct ctemplate {
 	const char* template_name;
 
 	template_file* template_files;
 	size_t template_files_count, template_files_cap;
 
-	struct ctemplate* dep;
-	size_t dep_count, dep_cap;
+	replacement replacement;
+
+	struct dependency* deps;
+	size_t deps_count, deps_cap;
 } ctemplate;
 
-typedef struct {
-	const char *needle, *with;
-} replacement_item;
+typedef struct dependency {
+	forward_table fwd_table;
+	ctemplate template_;
+} dependency;
 
-typedef struct {
-	replacement_item *replacements;
-	size_t replacements_count, replacements_capacity;
-} replacement;
-
-typedef struct str_ll_node {
-	string_view data;
-	struct str_ll_node *next, *prev;
-} str_ll_node;
-
-typedef struct str_ll {
-	str_ll_node *head, *tail;
-} str_ll;
 
 typedef const char* path;
 typedef struct generator_settings {
