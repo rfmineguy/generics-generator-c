@@ -76,6 +76,7 @@ void      template_free(ctemplate*);
 void      template_addfile(ctemplate*, const char*, const char*);
 void      template_adddep(ctemplate*, ctemplate);
 void      template_replacement(ctemplate*, const char*, const char*, const char*);
+void      template_addreplacement(ctemplate*, const char*, const char*);
 
 replacement       replacement_create();
 void              replacement_free(replacement*);
@@ -137,6 +138,10 @@ void template_addfile(ctemplate* tplt, const char* templatepath, const char* tem
 		tplt->template_files_cap *= 2;
 	}
 	tplt->template_files[tplt->template_files_count++] = file;
+}
+
+void template_addreplacement(ctemplate *tplt, const char *symbol, const char *with) {
+	replacement_add(&tplt->replacement, symbol, with);
 }
 
 /* 
