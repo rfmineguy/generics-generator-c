@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <stdbool.h>
 
 typedef struct {
 	const char *symbol, *as;
@@ -60,12 +61,12 @@ typedef struct dependency {
 	ctemplate template_;
 } dependency;
 
-
 typedef const char* path;
 typedef struct generator_settings {
 	path *search_paths;
 	size_t path_count;
 	const char* outdir;
+	bool verbose;
 } generator_settings;
 #define settings_default() (generator_settings) {.search_path={"."}}
 #define settings_custom(...) (generator_settings) {__VA_ARGS__}
@@ -195,7 +196,7 @@ void generator_run(generator_settings settings, ctemplate tplt, replacement repl
 
 #endif
 
-#define GENGEN_IMPLEMENTATION
+// #define GENGEN_IMPLEMENTATION
 #ifdef GENGEN_IMPLEMENTATION
 
 ctemplate template_create() {
@@ -368,7 +369,7 @@ void generator_run(generator_settings settings, ctemplate ctemplate, replacement
 			break;
 		}
 		if (j == settings.path_count) {
-			fprintf(stderr, "\033[33mWarn: Ignoring template file '%s'. Not found.\n", tf.infilename);
+			if (settings.verbose)printf("\033[33mWarn: Ignoring template file '%s'. Not found.\n\033[0m", tf.infilename);
 			continue;
 		}
 
@@ -401,14 +402,14 @@ void generator_run(generator_settings settings, ctemplate ctemplate, replacement
 		}
 
 		if (stat(outfilepath, &buffer) == -1) {
-			printf("\033[32mNotice: Regenerating '%s'\n", outfilepath);
+			if (settings.verbose)printf("\033[32mNotice: Regenerating '%s'\n", outfilepath);
 		}
 		else {
 			struct timespec outfile_modified = buffer.st_mtimespec;
 			struct timespec infile_modified = buffer2.st_mtimespec;
 		  if (infile_modified.tv_sec >= outfile_modified.tv_sec ||
         (infile_modified.tv_sec == outfile_modified.tv_sec && infile_modified.tv_nsec >= outfile_modified.tv_nsec)) {
-				printf("\033[32mNotice: Regenerating '%s'\n", outfilepath);
+				if (settings.verbose) printf("\033[32mNotice: Regenerating '%s'\n", outfilepath);
 			} else {
 				goto skip_dependency_gen;
 			}
@@ -436,7 +437,7 @@ void generator_run(generator_settings settings, ctemplate ctemplate, replacement
 					cursor += 1;
 				}
 			}
-			printf("\033[32mNotice: Regenerated '%s'\n", outfilepath);
+			if (settings.verbose)printf("\033[32mNotice: Regenerated '%s'\n", outfilepath);
 
 			free((char*)content);
 		}
