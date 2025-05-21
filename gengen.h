@@ -76,6 +76,7 @@ void      template_free(ctemplate*);
 void      template_addfile(ctemplate*, const char*, const char*);
 void      template_adddep(ctemplate*, ctemplate);
 void      template_replacement(ctemplate*, const char*, const char*, const char*);
+void      template_adddep(ctemplate*, ctemplate, forward_table);
 void      template_addreplacement(ctemplate*, const char*, const char*);
 
 replacement       replacement_create();
@@ -151,15 +152,15 @@ void template_addreplacement(ctemplate *tplt, const char *symbol, const char *wi
  * @param dep_tplt :   The template that this one depends on
  * @note 					 :   For future, not used at the moment
  */
-void template_adddep(ctemplate* tplt, ctemplate dep_tplt) {
-	if (tplt->dep_count == 0) {
-		tplt->dep = (ctemplate*)calloc(tplt->dep_cap, sizeof(ctemplate));
+void template_adddep(ctemplate* tplt, ctemplate dep_tplt, forward_table fwd_table) {
+	if (tplt->deps_count == 0) {
+		tplt->deps = (dependency*)calloc(tplt->deps_cap, sizeof(dependency));
 	}
-	if (tplt->dep_count + 1 >= tplt->dep_cap) {
-		tplt->dep = (ctemplate*)realloc(tplt->dep, tplt->dep_cap * 2);
-		tplt->dep_cap *= 2;
+	if (tplt->deps_count + 1 >= tplt->deps_cap) {
+		tplt->deps = (dependency*)realloc(tplt->deps, tplt->deps_cap * 2 * sizeof(dependency));
+		tplt->deps_cap *= 2;
 	}
-	tplt->dep[tplt->dep_count++] = dep_tplt;
+	tplt->deps[tplt->deps_count++] = (dependency){.fwd_table = fwd_table, .template_ = dep_tplt};
 }
 
 replacement replacement_create() {
