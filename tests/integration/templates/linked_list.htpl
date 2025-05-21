@@ -1,0 +1,19 @@
+#ifndef LINKED_LIST_$T_H
+#define LINKED_LIST_$T_H
+
+typedef struct ll_node_$T {
+	struct ll_node_$T *next, *prev;
+	^T val;
+} ll_node_$T;
+
+typedef struct ll_$T {
+	ll_node_$T *head, *tail;
+} ll_$T;
+
+ll_$T ll_$T_create();
+void  ll_$T_free(ll_$T*);
+void  ll_$T_pushback(ll_$T*, ^T);
+void  ll_$T_popback(ll_$T*);
+^T    ll_$T_peekback(ll_$T*);
+
+#endif

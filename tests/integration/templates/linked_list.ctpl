@@ -1,0 +1,27 @@
+#include "linked_list_$T.h"
+#include "linked_list_spec_$T.c"
+
+/*
+ * ll_$T_custom_free(ll_node_$T);
+ * 		- this function is required to be implemented in spec file per type
+ */
+
+ll_$T ll_$T_create() {
+	// TODO: Not Implemented
+}
+ 
+void  ll_$T_free(ll_$T* ll) {
+	// TODO: Not Implemented
+}
+
+void  ll_$T_pushback(ll_$T* ll, ^T val) {
+	// TODO: Not Implemented
+}
+
+void  ll_$T_popback(ll_$T* ll) {
+	// TODO: Not Implemented
+}
+
+^T    ll_$T_peekback(ll_$T* ll) {
+	// TODO: Not Implemented
+}
