@@ -81,6 +81,7 @@ replacement       replacement_create();
 void              replacement_free(replacement*);
 void              replacement_print(replacement*);
 
+replacement       replacement_forward(replacement, replacement); 
 void              replacement_add(replacement*, const char*, const char*);
 replacement_item* replacement_get(replacement*, const char*);
 
@@ -169,6 +170,23 @@ void replacement_free(replacement* repl) {
 	free(repl->replacements);
 }
 
+replacement replacement_forward(replacement to, replacement from) {
+	replacement r = replacement_create();
+	for (int i = 0; i < to.replacements_count; i++) {
+		int j = 0;
+		for (j = 0; j < from.replacements_count; j++) {
+			if (strcmp(from.replacements[j].needle, to.replacements[i].needle) == 0) {
+				replacement_add(&r, from.replacements[j].needle, from.replacements[j].with);
+				break;
+			}
+		}
+		if (j == from.replacements_count) {
+		  replacement_add(&r, to.replacements[i].needle, to.replacements[i].with);
+		}
+	}
+	
+	return r;
+}
 /*
  * @complexity 	   :   O(1) in all cases
  * @desc 			 	   : 	 Adds a dependent template to this template
