@@ -26,4 +26,11 @@ static MunitResult test_settings_custom_with_multiple_paths(const MunitParameter
 	return MUNIT_OK;
 }
 
+MunitTest settings_tests[] = {
+	{ "/custom_empty_paths", 			   test_settings_custom_empty_paths, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
+	{ "/custom_with_single_path",    test_settings_custom_with_single_path, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
+	{ "/custom_with_multiple_paths", test_settings_custom_with_multiple_paths, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
+  { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL }
+};
+
 #endif
