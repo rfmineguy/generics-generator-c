@@ -40,4 +40,28 @@ static MunitResult test_replacement_add(const MunitParameter params[], void *use
 	replacement_free(&r);
 	return MUNIT_OK;
 }
+
+static MunitResult test_replacement_forward(const MunitParameter params[], void *userdata) {
+	replacement r = replacement_create();
+	
+	replacement r1 = replacement_create();
+	replacement_add(&r1, "$T",    NULL);
+	replacement_add(&r1, "^T",    NULL);
+	replacement_add(&r1, "PRINT", "printf");
+
+	replacement r2 = replacement_create();
+	replacement_add(&r2, "$T", "string");
+	replacement_add(&r2, "^T", "int");
+
+	replacement r3 = replacement_forward(r1, r2);
+	munit_assert_string_equal(r3.replacements[0].needle, "$T");
+	munit_assert_string_equal(r3.replacements[0].with,   "string");
+	munit_assert_string_equal(r3.replacements[1].needle, "^T");
+	munit_assert_string_equal(r3.replacements[1].with,   "int");
+	munit_assert_string_equal(r3.replacements[2].needle, "PRINT");
+	munit_assert_string_equal(r3.replacements[2].with,   "printf");
+	
+	replacement_free(&r);
+	return MUNIT_OK;
+}
 #endif
