@@ -71,36 +71,133 @@ typedef struct generator_settings {
 #define settings_custom(...) (generator_settings) {__VA_ARGS__}
 #define paths(...) (path[]){__VA_ARGS__}, .path_count = (sizeof((path[]){__VA_ARGS__})/sizeof(path))
 
+/*
+ * @desc 			  Creates and initializes a ctemplate for use later
+ * @notes 			Must be cleaned up with template_free
+ * @return 			The created template instance
+ */
 ctemplate template_create();
-void      template_free(ctemplate*);
-void      template_addfile(ctemplate*, const char*, const char*);
-void      template_adddep(ctemplate*, ctemplate, forward_table);
-void      template_addreplacement(ctemplate*, const char*, const char*);
 
-replacement       replacement_create();
-void              replacement_free(replacement*);
-void              replacement_print(replacement*);
+/*
+ * @desc 			  Free the internal memory used by the template
+ * @param tplt  Pointer to the template being freed
+ */
+void template_free(ctemplate*);
 
-replacement       replacement_forward(replacement, replacement); 
-void              replacement_add(replacement*, const char*, const char*);
-replacement_item* replacement_get(replacement*, const char*);
+/*
+ * @desc 			         Adds a template file to the given template, and describes the output fileformat
+ * @param tplt         Pointer to the template being modified
+ * @param templatepath Path to the template file in your project
+ * @param templatefmt  The format of the output file's name
+ */
+void template_addfile(ctemplate*, const char*, const char*);
 
+/*
+ * @desc 						Adds a new replacement instance to the template
+ * @param tplt 			Pointer to the template being modified
+ * @param symbol 		The symbol that should be replaced
+ * @param with 			What should the symbol replaced with?
+ */
+void template_addreplacement(ctemplate*, const char*, const char*);
+
+/* 
+ * @desc 			 	     Adds a dependent template to this template
+ * @param tplt 	     Pointer to the template being modified
+ * @param dep_tplt   The template that this one depends on
+ */
+void template_adddep(ctemplate*, ctemplate, forward_table);
+
+/*
+ * @desc 			  Creates and initializes a replacement for use later
+ * @return 			The created replacement instance
+ * @notes 			Must be cleaned up with replacement_free
+ */
+replacement replacement_create();
+
+/*
+ * @desc 				Frees the supplied replacement instance
+ * @notes 			'repl' should have been created via replacement_create
+ */
+void replacement_free(replacement*);
+
+/*
+ * @desc 				Prints out this replacement
+ * @param repl  Pointer to a replacement context
+ * @notes 			'repl' should have been created via replacement_create
+ */
+void replacement_print(replacement* repl);
+
+/*
+ * @desc 				Forwards the replacement from one replacement instance to another
+ * 								while maintaining the original replacements
+ * @return 			A new replacement instance 
+ * @notes 			Returned instance must be freed with replacement_free
+ */
+replacement replacement_forward(replacement tplt, replacement dep_tplt); 
+
+/*
+ * @desc 					Adds a replacement item to this replacement context
+ * @param repl 		Pointer to a replacement context
+ * @param needle  The string to search for
+ * @param with    The string to replace needle with
+ * @notes 			  'repl' should have been created via replacement_create
+ */
+void replacement_add(replacement* repl, const char* needle, const char* with);
+
+/*
+ * @desc          Looks for the replacement for a given cursor position
+ * @param repl    The replacement context to search in
+ * @param cursor  The cursor position to search from
+ * @return 		 		NULL if no replacement exists for the cursor position
+ * 								pointer to replacement item that is used for the cursor position
+ * @notes 				'repl' should have been created via 'replacement_create'
+ */
+replacement_item* replacement_get(replacement* repl, const char* cursor);
+
+/*
+ * @desc          Prints out the replacement data to stdout
+ * @return 				A new forward table
+ * @notes 				Returned table must be freed via 'forward_table_free'
+ */
 forward_table forward_table_create();
-void          forward_table_free(forward_table*);
-void          forward_table_forward(forward_table*, forward_item);
 
-void    generator_run(generator_settings, ctemplate, replacement);
+/*
+ * @desc        		 Prints out the replacement data to stdout
+ * @param fwd_table  A valid forward table pointer 
+ * @notes 			     'fwd_table' should have been created via 'forward_table_create'
+ */
+void forward_table_free(forward_table* fwd_table);
+
+/*
+ * @desc        		 Adds a new forward rule to the forward table
+ * @param fwd_table  A valid forward table pointer 
+ * @param fwd_item   A valid forward item ('fwd' macro can be used for convience)
+ * @notes 			     'fwd_table' should have been created via 'forward_table_create'
+ */
+void forward_table_forward(forward_table* fwd_table, forward_item fwd_item);
+
+/*
+ * @desc             Produces the final template given replacements and settings
+ * @param settings   Provides a set of configuration options that influence how 
+ *                      the generator functions
+ *
+ *                   .search_paths   - specify where the generator should look for templates
+ *                   .outdir      - specify where the generator should put output templates
+ *
+ *                   @see settings_custom(...)
+ *                   @see settings_default()
+ * @param tplt       Specify what template we are generating
+ * @param repl       Specify what replacement set we should use for generating
+ * @notes            'tplt' should have been created via 'template_create'
+ * @notes            'repl' should have been created via 'replacement_create'
+ */
+void generator_run(generator_settings settings, ctemplate tplt, replacement repl);
 
 #endif
 
 #define GENGEN_IMPLEMENTATION
 #ifdef GENGEN_IMPLEMENTATION
 
-/*
- * Time Complexity
- * O(1) in all cases
- * @desc 			  Creates and initializes a ctemplate for use later
- * */
 ctemplate template_create() {
   return (ctemplate) {
 		.template_name = "unused",
@@ -110,24 +207,10 @@ ctemplate template_create() {
 		.replacement = replacement_create()};
 }
 
-/*
- * Time Complexity
- * O(1) in all cases
- * @desc 			  Free the internal memory used by the template
- * @param tplt  Pointer to the template being freed
- */
 void template_free(ctemplate* tplt) {
 	free(tplt->template_files);
 }
 
-/*
- * Time Complexity
- * O(1) in all cases
- * @desc 			         Adds a template file to the given template, and describes the output fileformat
- * @param tplt         Pointer to the template being modified
- * @param templatepath Path to the template file in your project
- * @param templatefmt  The format of the output file's name
- */
 void template_addfile(ctemplate* tplt, const char* templatepath, const char* templatefmt) {
 	template_file file = (template_file){templatepath, templatefmt};
 	if (tplt->template_files_count == 0) {
@@ -144,13 +227,6 @@ void template_addreplacement(ctemplate *tplt, const char *symbol, const char *wi
 	replacement_add(&tplt->replacement, symbol, with);
 }
 
-/* 
- * @complexity 	   :   O(1) in all cases
- * @desc 			 	   : 	 Adds a dependent template to this template
- * @param tplt 	   : 	 Pointer to the template being modified
- * @param dep_tplt :   The template that this one depends on
- * @note 					 :   For future, not used at the moment
- */
 void template_adddep(ctemplate* tplt, ctemplate dep_tplt, forward_table fwd_table) {
 	if (tplt->deps_count == 0) {
 		tplt->deps = (dependency*)calloc(tplt->deps_cap, sizeof(dependency));
@@ -187,13 +263,6 @@ replacement replacement_forward(replacement to, replacement from) {
 	
 	return r;
 }
-/*
- * @complexity 	   :   O(1) in all cases
- * @desc 			 	   : 	 Adds a dependent template to this template
- * @param tplt 	   : 	 Pointer to the template being modified
- * @param dep_tplt :   The template that this one depends on
- * @note 					 :   For future, not used at the moment
- */
 void replacement_add(replacement* repl, const char* needle, const char* with) {
 	if (repl->replacements_count == 0) {
 		repl->replacements = (replacement_item*)calloc(repl->replacements_capacity, sizeof(replacement));
@@ -206,18 +275,6 @@ void replacement_add(replacement* repl, const char* needle, const char* with) {
 	repl->replacements[repl->replacements_count++] = rep;
 }
 
-/*
- * Time Complexity
- * O(n*m) where 
- * 			n is the number of replacements
- * 			m is the length of those replacements
- *
- * @desc          Looks for the replacement for a given cursor position
- * @param repl    The replacement context to search in
- * @param cursor  The cursor position to search from
- * @return 		 		NULL if no replacement exists for the cursor position
- * 								pointer to replacement item that is used for the cursor position
- */
 replacement_item* replacement_get(replacement* repl, const char* cursor) {
 	for (int i = 0; i < repl->replacements_count; i++) {
 		replacement_item *item = &repl->replacements[i];
@@ -228,6 +285,13 @@ replacement_item* replacement_get(replacement* repl, const char* cursor) {
 	return NULL;
 }
 
+/*
+ * Time Complexity
+ * O(n) in all cases
+ * @desc          Prints out the replacement data to stdout
+ * @param repl    The replacement context to search in
+ * @notes 				'repl' should have been created via 'replacement_create'
+ */
 void replacement_print(replacement* repl) {
 	printf("Replacement {\n");
 	for (int i = 0; i < repl->replacements_count; i++) {
@@ -255,6 +319,7 @@ void forward_table_forward(forward_table* fwd_table, forward_item fwd_item) {
 	fwd_table->fwd_items[fwd_table->fwd_items_count++] = fwd_item;
 }
 
+/* Private function */
 char* read_file(const char* filepath) {
 	FILE* f = fopen(filepath, "r");
 	assert(f, {
