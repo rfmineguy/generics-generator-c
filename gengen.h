@@ -74,8 +74,6 @@ typedef struct generator_settings {
 ctemplate template_create();
 void      template_free(ctemplate*);
 void      template_addfile(ctemplate*, const char*, const char*);
-void      template_adddep(ctemplate*, ctemplate);
-void      template_replacement(ctemplate*, const char*, const char*, const char*);
 void      template_adddep(ctemplate*, ctemplate, forward_table);
 void      template_addreplacement(ctemplate*, const char*, const char*);
 
