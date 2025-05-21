@@ -101,7 +101,12 @@ void    generator_run(generator_settings, ctemplate, replacement);
  * @desc 			  Creates and initializes a ctemplate for use later
  * */
 ctemplate template_create() {
-  return (ctemplate) {.template_name = "unused", .template_files = NULL, .template_files_count = 0, .template_files_cap = 10};
+  return (ctemplate) {
+		.template_name = "unused",
+		.template_files = NULL,
+		.template_files_count = 0,
+		.template_files_cap = 10,
+		.replacement = replacement_create()};
 }
 
 /*
