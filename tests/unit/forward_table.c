@@ -26,4 +26,11 @@ static MunitResult test_forward_table_forward(const MunitParameter params[], voi
 	forward_table_free(&fwd_table);
 	return MUNIT_OK;
 }
+
+MunitTest forward_table_tests[] = {
+	{ "/create",     test_forward_table_create, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
+	{ "/forward",    test_forward_table_forward, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
+  { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL }
+};
+
 #endif
