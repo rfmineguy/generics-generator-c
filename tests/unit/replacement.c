@@ -64,4 +64,19 @@ static MunitResult test_replacement_forward(const MunitParameter params[], void 
 	replacement_free(&r);
 	return MUNIT_OK;
 }
+
+static MunitResult test_replacement_get(const MunitParameter params[], void *userdata) {
+	const char* mock_cursor = "$T()...";
+
+	replacement r = replacement_create();
+	replacement_add(&r, "$T", "string");
+	munit_assert_not_null(replacement_get(&r, mock_cursor));
+
+	mock_cursor = "hello";
+	munit_assert_ptr_null(replacement_get(&r, mock_cursor));
+
+	replacement_free(&r);
+	return MUNIT_OK;
+}
+
 #endif
