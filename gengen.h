@@ -172,7 +172,7 @@ void replacement_add(replacement* repl, const char* needle, const char* with) {
 		repl->replacements = (replacement_item*)calloc(repl->replacements_capacity, sizeof(replacement));
 	}
 	if (repl->replacements_count + 1 >= repl->replacements_capacity) {
-		repl->replacements = (replacement_item*)realloc(repl->replacements, repl->replacements_capacity * 2);
+		repl->replacements = (replacement_item*)realloc(repl->replacements, sizeof(replacement) * repl->replacements_capacity * 2);
 		repl->replacements_capacity *= 2;
 	}
 	replacement_item rep = {.needle = needle, .with = with};
