@@ -79,6 +79,8 @@ void      template_replacement(ctemplate*, const char*, const char*, const char*
 
 replacement       replacement_create();
 void              replacement_free(replacement*);
+void              replacement_print(replacement*);
+
 void              replacement_add(replacement*, const char*, const char*);
 replacement_item* replacement_get(replacement*, const char*);
 
@@ -197,6 +199,14 @@ replacement_item* replacement_get(replacement* repl, const char* cursor) {
 			return item;
 	}
 	return NULL;
+}
+
+void replacement_print(replacement* repl) {
+	printf("Replacement {\n");
+	for (int i = 0; i < repl->replacements_count; i++) {
+		printf("\t{needle: %s, with: %s}\n", repl->replacements[i].needle, repl->replacements[i].with);
+	}
+	printf("}\n");
 }
 
 forward_table forward_table_create() {
