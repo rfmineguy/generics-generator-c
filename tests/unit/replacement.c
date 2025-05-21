@@ -79,4 +79,13 @@ static MunitResult test_replacement_get(const MunitParameter params[], void *use
 	return MUNIT_OK;
 }
 
+MunitTest replacement_tests[] = {
+	{ "/create", 			   test_replacement_create,   NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
+	{ "/forward", 			 test_replacement_forward , NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
+	{ "/add", 					 test_replacement_add ,     NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
+	{ "/get",     			 test_replacement_get     , NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
+
+  { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL }
+};
+
 #endif
