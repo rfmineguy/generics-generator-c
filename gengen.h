@@ -440,6 +440,7 @@ void generator_run(generator_settings settings, ctemplate ctemplate, replacement
 			if (settings.verbose)printf("\033[32mNotice: Regenerated '%s'\n", outfilepath);
 
 			free((char*)content);
+			fclose(outputfile);
 		}
 
 skip_dependency_gen:
