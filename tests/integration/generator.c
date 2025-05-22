@@ -62,12 +62,40 @@ MunitResult test_generator_linkedlist_long(const MunitParameter params[], void *
 
 	return MUNIT_OK;
 }
+
+MunitResult test_generator_linkedlist_vec2(const MunitParameter params[], void *userdata) {
+	ctemplate linkedlist = template_create();
+	template_addfile       (&linkedlist, "linked_list.htpl", "linked_list_$T.h");
+	template_addfile       (&linkedlist, "linked_list.ctpl", "linked_list_$T.c");
+	template_addreplacement(&linkedlist, "$T",     NULL);
+	template_addreplacement(&linkedlist, "^T",     NULL);
+	template_addreplacement(&linkedlist, "PRINTF", "printf");
+	template_addreplacement(&linkedlist, "FREE",   "free");
+	template_addreplacement(&linkedlist, "CALLOC", "calloc");
+	template_addreplacement(&linkedlist, "HEADER", "stdint.h");
+
+	replacement ll_vec2 = replacement_create();
+	replacement_add(&ll_vec2, "$T", "vec2");
+	replacement_add(&ll_vec2, "^T", "vector2");
+
+	generator_run(settings_custom(.search_paths=paths("templates"), .outdir="output"), linkedlist, ll_vec2);
+
+	munit_assert_file_exists("output/linked_list_vec2.h");
+	munit_assert_file_exists("output/linked_list_vec2.c");
+
+	munit_assert_int(util_count_symbols("templates/linked_list.htpl", "$T"), ==, util_count_symbols("output/linked_list_vec2.h", "vec2"));
+	munit_assert_int(util_count_symbols("templates/linked_list.htpl", "^T"), ==, util_count_symbols("output/linked_list_vec2.h", "vector2"));
+
+	template_free(&linkedlist);
+	replacement_free(&ll_vec2);
+
 	return MUNIT_OK;
 }
 
 MunitTest generator_tests[] = {
 	{ "/linkedlist_string", test_generator_linkedlist_string, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
 	{ "/linkedlist_long",   test_generator_linkedlist_long,   NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
+	{ "/linkedlist_vec2",   test_generator_linkedlist_vec2,   NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
   { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL }
 };
 
