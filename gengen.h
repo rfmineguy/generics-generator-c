@@ -374,7 +374,7 @@ void generator_run(generator_settings settings, ctemplate ctemplate, replacement
 		}
 
 		assert(realpath(settings.outdir, realpath_outpath) != NULL, {
-			printf("Failed:: path = %s\n", path);
+			printf("Failed:: outdir '%s' doesn't exist\n", realpath_outpath);
 			continue;
 		});
 
