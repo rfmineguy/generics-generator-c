@@ -161,10 +161,12 @@ static MunitResult test_replacement_get(const MunitParameter params[], void *use
 }
 
 MunitTest replacement_tests[] = {
-	{ "/create", 			   test_replacement_create,   NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
-	{ "/forward", 			 test_replacement_forward , NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
-	{ "/add", 					 test_replacement_add ,     NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
-	{ "/get",     			 test_replacement_get     , NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
+	{ "/create",         test_replacement_create   , NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
+	{ "/forward1",       test_replacement_forward_1, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
+	{ "/forward2",       test_replacement_forward_2, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
+	{ "/forward_nulls",  test_replacement_forward_3, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
+	{ "/add",            test_replacement_add      , NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
+	{ "/get",            test_replacement_get      , NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL},
 
   { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL }
 };
