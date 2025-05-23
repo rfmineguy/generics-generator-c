@@ -134,7 +134,7 @@ void replacement_print(replacement* repl);
  * @return 			A new replacement instance 
  * @notes 			Returned instance must be freed with replacement_free
  */
-replacement replacement_forward(replacement tplt, replacement dep_tplt); 
+replacement replacement_forward(replacement tplt, replacement dep_tplt, forward_table with); 
 
 /*
  * @desc 					Adds a replacement item to this replacement context
@@ -247,21 +247,67 @@ void replacement_free(replacement* repl) {
 	free(repl->replacements);
 }
 
-replacement replacement_forward(replacement to, replacement from) {
+/*
+ * forward replacements from 'from' to 'to' based on the 'with' forward table
+ * Example:
+ * from (replacement):
+ * 	'$T' -> 'int'
+ *  '^T' -> 'age'
+ * to (replacment):
+ * 	'@T' -> NULL
+ * 	'&T' -> NULL
+ * 	'PRINT' -> 'printf'
+ * 	'FREE'  -> 'free'
+ * with:
+ * 	.symbol='$T', .as='@T'
+ * 	.symbol='^T', .as='&T'
+ *
+ * expected:
+ *  '@T' -> 'int'
+ *  '^T' -> 'age'
+ */
+replacement replacement_forward(replacement to, replacement from, forward_table with) {
 	replacement r = replacement_create();
-	for (int i = 0; i < to.replacements_count; i++) {
+	for (int i = 0; i < with.fwd_items_count; i++) {
 		int j = 0;
-		for (j = 0; j < from.replacements_count; j++) {
-			if (strcmp(from.replacements[j].needle, to.replacements[i].needle) == 0) {
-				replacement_add(&r, from.replacements[j].needle, from.replacements[j].with);
+		// 1. find replacement in 'to' whose needle is equal to fwd.as
+		forward_item fwd = with.fwd_items[i];
+		for (j = 0; j < to.replacements_count; j++) {
+			if (to.replacements[j].needle == fwd.as) {
 				break;
 			}
 		}
-		if (j == from.replacements_count) {
-		  replacement_add(&r, to.replacements[i].needle, to.replacements[i].with);
+
+		// if j is bigger than the replacement count we didnt find one
+		//    j represents the index of the replacement in 'to' we are forwarding to
+		if (j >= to.replacements_count) continue;
+
+		int k = 0;
+		// 2. find replacement in 'from' whose needle is equal to fwd.symbol
+		for (k = 0; k < from.replacements_count; k++) {
+			if (from.replacements[k].needle == fwd.symbol) {
+				break;
+			}
+		}
+
+		// if k is bigger than the replacement count we didnt find one
+		//    k represents the index of the replacement in 'from' we are forwarding from
+		if (k >= from.replacements_count) continue;
+
+		// at this point 'j' and 'k' should have valid indices
+		// we need to set the .needle of to.replacments[j] equal to the .with of from.replacements[k]
+		replacement_add(&r, to.replacements[j].needle, from.replacements[k].with);
+	}
+
+	// when we get here, 'r' should contain all of the symbols from the forward table
+	// now we need add back in the symbols that already had valid replacements
+	for (int i = 0; i < to.replacements_count; i++) {
+		// 1. determine if this replacement is NULL. if not we simply add it into the new repalcement
+		if (to.replacements[i].with != NULL) {
+			replacement_add(&r, to.replacements[i].needle, to.replacements[i].with);
 		}
 	}
-	
+
 	return r;
 }
 void replacement_add(replacement* repl, const char* needle, const char* with) {
@@ -447,7 +493,7 @@ skip_dependency_gen:
 		for (int i = 0; i < ctemplate.deps_count; i++) {
 			forward_table fwd = ctemplate.deps[i].fwd_table;
 			replacement parent = replacement_;
-			replacement r = replacement_forward(ctemplate.deps[i].template_.replacement, parent);
+			replacement r = replacement_forward(ctemplate.deps[i].template_.replacement, parent, fwd);
 			generator_run(settings, ctemplate.deps[i].template_, r);
 			replacement_free(&r);
 		}
