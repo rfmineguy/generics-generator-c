@@ -41,17 +41,34 @@ static MunitResult test_replacement_add(const MunitParameter params[], void *use
 	return MUNIT_OK;
 }
 
-static MunitResult test_replacement_forward(const MunitParameter params[], void *userdata) {
-	replacement r = replacement_create();
-	
+static MunitResult test_replacement_forward_1(const MunitParameter params[], void *userdata) {
 	replacement r1 = replacement_create();
 	replacement_add(&r1, "$T",    NULL);
 	replacement_add(&r1, "^T",    NULL);
+	replacement_add(&r1, "LORN",  NULL);
 	replacement_add(&r1, "PRINT", "printf");
 
 	replacement r2 = replacement_create();
 	replacement_add(&r2, "$T", "string");
 	replacement_add(&r2, "^T", "int");
+	replacement_add(&r2, "X",  "poop");
+
+	forward_table fwd = forward_table_create();
+	forward_table_forward(&fwd, fwd(.symbol="^T", .as="$T"));
+	forward_table_forward(&fwd, fwd(.symbol="$T", .as="^T"));
+	forward_table_forward(&fwd, fwd(.symbol="X",  .as="LORN"));
+
+	replacement r3 = replacement_forward(r1, r2, fwd);
+	munit_assert_replacement_contains(r3, "$T", "int");
+	munit_assert_replacement_contains(r3, "^T", "string");
+	munit_assert_replacement_contains(r3, "LORN", "poop");
+	munit_assert_replacement_contains(r3, "PRINT", "printf");
+	
+	replacement_free(&r1);
+	replacement_free(&r2);
+	replacement_free(&r3);
+	return MUNIT_OK;
+}
 
 	replacement r3 = replacement_forward(r1, r2);
 	munit_assert_string_equal(r3.replacements[0].needle, "$T");
