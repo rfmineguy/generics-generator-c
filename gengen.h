@@ -369,7 +369,7 @@ void forward_table_forward(forward_table* fwd_table, forward_item fwd_item) {
 }
 
 /* Private function */
-char* read_file(const char* filepath) {
+static char* read_file(const char* filepath) {
 	FILE* f = fopen(filepath, "r");
 	assert(f, {
 		fprintf(stderr, "Failed to open '%s'\n", filepath);
@@ -381,12 +381,17 @@ char* read_file(const char* filepath) {
 	})
 	fseek(f, 0, SEEK_SET);
 
-	char* buf = (char*)malloc((size_t)size);
+	char* buf = (char*)malloc((size_t)size + 1);
+	assert(buf != NULL, {
+		fclose(f);
+		fprintf(stderr, "Malloc failed\n");
+	});
 	assert(fread(buf, 1, (unsigned long)size, f) == size, { 
 		fclose(f);
 		free(buf);
 		fprintf(stderr, "Failed to read '%s'\n", filepath); 
 	});
+	buf[size] = 0;
 
 	fclose(f);
 	return buf;
