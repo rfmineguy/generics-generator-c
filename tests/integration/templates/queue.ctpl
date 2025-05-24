@@ -1,0 +1,5 @@
+#include "queue_$T.h"
+
+queue_$T queue_$T_create() {
+	return (queue_$T) {};
+}

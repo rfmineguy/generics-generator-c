@@ -1,0 +1,9 @@
+#ifndef QUEUE_$T_H
+#define QUEUE_$T_H
+#include "linked_list_$T.h"
+
+typedef struct queue_$T {
+	ll_$T llist;
+} queue_$T;
+
+#endif
