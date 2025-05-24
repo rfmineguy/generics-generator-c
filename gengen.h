@@ -77,7 +77,7 @@ typedef struct generator_settings {
  * @notes 			Must be cleaned up with template_free
  * @return 			The created template instance
  */
-ctemplate template_create();
+ctemplate template_create(const char*);
 
 /*
  * @desc 			  Free the internal memory used by the template
@@ -199,9 +199,9 @@ void generator_run(generator_settings settings, ctemplate tplt, replacement repl
 // #define GENGEN_IMPLEMENTATION
 #ifdef GENGEN_IMPLEMENTATION
 
-ctemplate template_create() {
+ctemplate template_create(const char* name) {
   return (ctemplate) {
-		.template_name = "unused",
+		.template_name = name,
 		.template_files = NULL,
 		.template_files_count = 0,
 		.template_files_cap = 10,
