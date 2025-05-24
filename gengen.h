@@ -126,7 +126,7 @@ void replacement_free(replacement*);
  * @param repl  Pointer to a replacement context
  * @notes 			'repl' should have been created via replacement_create
  */
-void replacement_print(replacement* repl);
+void replacement_print(const replacement* repl);
 
 /*
  * @desc 				Forwards the replacement from one replacement instance to another
@@ -205,6 +205,8 @@ ctemplate template_create() {
 		.template_files = NULL,
 		.template_files_count = 0,
 		.template_files_cap = 10,
+		.deps_count = 0,
+		.deps_cap = 10,
 		.replacement = replacement_create()};
 }
 
