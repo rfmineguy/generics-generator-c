@@ -43,7 +43,7 @@ clean:
 # 	- integration_tets
 # ====================================
 $(TEST_OUTPUT_DIR)/unit_tests_main: $(UNIT_TEST_SOURCES)
-	gcc $^ lib/munit.c lib/util.c -ggdb -o $@
+	gcc $^ lib/munit.c lib/util.c -ggdb -fsanitize=address -o $@
 
 $(TEST_OUTPUT_DIR)/integration_tests_main: $(INTEGRATION_TEST_SOURCES)
-	gcc $^ lib/munit.c lib/util.c -ggdb -o $@
+	gcc $^ lib/munit.c lib/util.c -ggdb -fsanitize=address -o $@
