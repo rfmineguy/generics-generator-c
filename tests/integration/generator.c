@@ -5,8 +5,11 @@
 #include "../lib/util.h"
 #include <unistd.h>
 
+#define LINKEDLIST "linkedlist"
+#define QUEUE "queue"
+
 MunitResult test_generator_linkedlist_string(const MunitParameter params[], void *userdata) {
-	ctemplate linkedlist = template_create();
+	ctemplate linkedlist = template_create(LINKEDLIST);
 	template_addfile       (&linkedlist, "linked_list.htpl", "linked_list_$T.h");
 	template_addfile       (&linkedlist, "linked_list.ctpl", "linked_list_$T.c");
 	template_addreplacement(&linkedlist, "$T",     NULL);
@@ -35,7 +38,7 @@ MunitResult test_generator_linkedlist_string(const MunitParameter params[], void
 }
 
 MunitResult test_generator_linkedlist_long(const MunitParameter params[], void *userdata) {
-	ctemplate linkedlist = template_create();
+	ctemplate linkedlist = template_create(LINKEDLIST);
 	template_addfile       (&linkedlist, "linked_list.htpl", "linked_list_$T.h");
 	template_addfile       (&linkedlist, "linked_list.ctpl", "linked_list_$T.c");
 	template_addreplacement(&linkedlist, "$T",     NULL);
@@ -64,7 +67,7 @@ MunitResult test_generator_linkedlist_long(const MunitParameter params[], void *
 }
 
 MunitResult test_generator_linkedlist_vec2(const MunitParameter params[], void *userdata) {
-	ctemplate linkedlist = template_create();
+	ctemplate linkedlist = template_create(LINKEDLIST);
 	template_addfile       (&linkedlist, "linked_list.htpl", "linked_list_$T.h");
 	template_addfile       (&linkedlist, "linked_list.ctpl", "linked_list_$T.c");
 	template_addreplacement(&linkedlist, "$T",     NULL);
