@@ -13,12 +13,13 @@ char* read_file_(const char* filepath) {
 	})
 	fseek(f, 0, SEEK_SET);
 
-	char* buf = (char*)malloc((size_t)size);
+	char* buf = (char*)malloc((size_t)size + 1);
 	assert(fread(buf, 1, (unsigned long)size, f) == size, { 
 		fclose(f);
 		free(buf);
 		fprintf(stderr, "Failed to read '%s'\n", filepath); 
 	});
+	buf[size] = 0;
 
 	fclose(f);
 	return buf;
