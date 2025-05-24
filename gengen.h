@@ -341,7 +341,7 @@ replacement_item* replacement_get(replacement* repl, const char* cursor) {
  * @param repl    The replacement context to search in
  * @notes 				'repl' should have been created via 'replacement_create'
  */
-void replacement_print(replacement* repl) {
+void replacement_print(const replacement* repl) {
 	printf("Replacement {\n");
 	for (int i = 0; i < repl->replacements_count; i++) {
 		printf("\t{needle: %s, with: %s}\n", repl->replacements[i].needle, repl->replacements[i].with);
