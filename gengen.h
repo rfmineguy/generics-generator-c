@@ -398,6 +398,10 @@ static char* read_file(const char* filepath) {
 }
 
 void generator_run(generator_settings settings, ctemplate ctemplate, replacement replacement_) {
+	if (settings.verbose) {
+		printf("\033[33mInfo: Generating template '%s'\033[0m\n", ctemplate.template_name);
+		replacement_print(&replacement_);
+	}
 	// 1. Read in the template file
 	static char path[PATH_MAX];
 	static char realpath_outpath[PATH_MAX];
@@ -436,7 +440,7 @@ void generator_run(generator_settings settings, ctemplate ctemplate, replacement
 		strncpy(outfilepath, realpath_outpath, PATH_MAX);
 		strncat(outfilepath, "/", PATH_MAX);
 		const char* cursorfp = tf.outfilename_fmt;
-		replacement_item* found = NULL;
+		const replacement_item* found = NULL;
 		while (*cursorfp) {
 			if ((found = replacement_get(&replacement_, cursorfp))) {
 				strncat(outfilepath, found->with, PATH_MAX);
@@ -473,14 +477,19 @@ void generator_run(generator_settings settings, ctemplate ctemplate, replacement
 			FILE* outputfile = fopen(outfilepath, "w");
 			if (!outputfile) {
 				fprintf(stderr, "Couldn't create %s for reason: %s\n", outfilepath, strerror(errno));
-				fclose(outputfile);
 				continue;
 			}
 
 			const char* content = read_file(path);
 			const char* cursor = content;
+			if (!cursor) {
+				if (settings.verbose) {
+					printf("\033[32mNotice: Something wrong with the read_file of: '%s'\n", path);
+					continue;
+				}
+			}
 
-			while (*cursor) {
+			while (*cursor && cursor < content + strlen(content)) {
 				if ((found = replacement_get(&replacement_, cursor))) {
 					cursor += strlen(found->needle);
 					fprintf(outputfile, "%s", found->with);
