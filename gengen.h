@@ -506,11 +506,11 @@ void generator_run(generator_settings settings, ctemplate ctemplate, replacement
 		}
 
 skip_dependency_gen:
-		for (int i = 0; i < ctemplate.deps_count; i++) {
-			forward_table fwd = ctemplate.deps[i].fwd_table;
+		for (int z = 0; z < ctemplate.deps_count; z++) {
+			forward_table fwd = ctemplate.deps[z].fwd_table;
 			replacement parent = replacement_;
-			replacement r = replacement_forward(ctemplate.deps[i].template_.replacement, parent, fwd);
-			generator_run(settings, ctemplate.deps[i].template_, r);
+			replacement r = replacement_forward(ctemplate.deps[z].template_.replacement, parent, fwd);
+			generator_run(settings, ctemplate.deps[z].template_, r);
 			replacement_free(&r);
 		}
 	}
