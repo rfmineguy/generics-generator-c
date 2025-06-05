@@ -561,4 +561,13 @@ void ll_long_string_print(long_string_ll* ll) {
 	printf("==========================\n");
 	printf("\033[0m\n");
 }
+
+typedef struct generator_context {
+	long_string_ll ll;
+	const char* embeded[100];
+	int embededlen;
+
+	const char* read_contents[100];
+	int read_contentslen;
+} generator_context;
 #endif
