@@ -717,6 +717,11 @@ void generator_run_embed(generator_settings settings, ctemplate tplt, template_f
 			segment_start = 0;
 			state = 0;
 		}
+		if (state == 3) { // no embed
+			while (*cursor && *cursor != '\n') cursor++;
+			segment_start = 0;
+			state = 0;
+		}
 	}
 }
 	}
