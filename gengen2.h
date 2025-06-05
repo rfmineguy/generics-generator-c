@@ -282,6 +282,17 @@ void template_adddep(ctemplate* tplt, ctemplate dep_tplt, forward_table fwd_tabl
 replacement replacement_create() {
 	return (replacement){.replacements = NULL, .replacements_count = 0, .replacements_capacity = 10};
 }
+void replacement_add(replacement* repl, const char* needle, const char* with) {
+	if (repl->replacements_count == 0) {
+		repl->replacements = (replacement_item*)calloc(repl->replacements_capacity, sizeof(replacement));
+	}
+	if (repl->replacements_count + 1 >= repl->replacements_capacity) {
+		repl->replacements = (replacement_item*)realloc(repl->replacements, sizeof(replacement) * repl->replacements_capacity * 2);
+		repl->replacements_capacity *= 2;
+	}
+	replacement_item rep = {.needle = needle, .with = with, .with_refcounter = 0}; // static allocation of with
+	repl->replacements[repl->replacements_count++] = rep;
+}
 forward_table forward_table_create() {
 	return (forward_table){.fwd_items = NULL, .fwd_items_count = 0, .fwd_items_capacity = 10};
 }
