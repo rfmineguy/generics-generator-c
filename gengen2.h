@@ -664,6 +664,15 @@ void generator_run_embed(generator_settings settings, ctemplate tplt, template_f
 				cursor++;
 			}
 		}
+		if (state == 2) { // replacement
+			segment_end = cursor;
+			cursor += strlen(found->needle);
+			ll_long_string_pushback(&ctx->ll, segment_start, segment_end - segment_start);
+			ll_long_string_pushback(&ctx->ll, found->with, strlen(found->with));
+
+			segment_start = 0;
+			state = 0;
+		}
 	}
 }
 	}
