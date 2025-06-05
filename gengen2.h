@@ -584,4 +584,25 @@ bool check_embeded(generator_context* ctx, template_file tf) {
 	}
 	return false;
 }
+
+char* find_template_path(generator_settings settings, template_file tf) {
+	static char path[PATH_MAX];
+	struct stat buffer;
+	int j = 0;
+	for (j = 0; j < settings.path_count; j++) {
+		path[0] = 0;
+		const char* search_path = settings.search_paths[j];
+		assert_(realpath(search_path, path) != NULL, {
+			continue;
+		});
+		strncat(path, "/", PATH_MAX);
+		strncat(path, tf.infilename, PATH_MAX);
+		assert_(stat(path, &buffer) == 0, {
+			continue;
+		})
+		break;
+	}
+	if (j == settings.path_count) return NULL;
+	return path;
+}
 #endif
