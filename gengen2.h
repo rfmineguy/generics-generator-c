@@ -570,4 +570,10 @@ typedef struct generator_context {
 	const char* read_contents[100];
 	int read_contentslen;
 } generator_context;
+
+bool check_has_extension(const char* str, const char* extension) {
+	const char* cursor = str;
+	while (*cursor && *cursor != '.') cursor++;
+	return strncmp(cursor, extension, strlen(extension)) == 0;
+}
 #endif
