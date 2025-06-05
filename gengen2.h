@@ -278,6 +278,10 @@ void template_adddep(ctemplate* tplt, ctemplate dep_tplt, forward_table fwd_tabl
 	}
 	tplt->deps[tplt->deps_count++] = (dependency){.fwd_table = fwd_table, .template_ = dep_tplt, .settings = dep_settings};
 }
+
+replacement replacement_create() {
+	return (replacement){.replacements = NULL, .replacements_count = 0, .replacements_capacity = 10};
+}
 forward_table forward_table_create() {
 	return (forward_table){.fwd_items = NULL, .fwd_items_count = 0, .fwd_items_capacity = 10};
 }
