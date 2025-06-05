@@ -641,6 +641,13 @@ void generator_run_embed(generator_settings settings, ctemplate tplt, template_f
 	const char* segment_end   = (const char*)0;
 	int state = 0; // 0 - default, 1 - embed, 2 - replacement
 	while (1) {
+		if (*cursor == 0) {
+			segment_end = cursor;
+			if (segment_start) {
+				ll_long_string_pushback(&ctx->ll, segment_start, segment_end - segment_start);
+			}
+			break;
+		}
 	}
 }
 
