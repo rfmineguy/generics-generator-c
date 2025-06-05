@@ -562,6 +562,15 @@ void ll_long_string_print(long_string_ll* ll) {
 	printf("\033[0m\n");
 }
 
+void ll_long_string_writefile(long_string_ll* ll, FILE* f) {
+	long_string_node* n = ll->head;
+	while (n) {
+		for (int i = 0; i < n->length; i++)
+			fprintf(f, "%c", n->content[i]);
+		n = n->next;
+	}
+}
+
 typedef struct generator_context {
 	long_string_ll ll;
 	const char* embeded[100];
