@@ -605,4 +605,43 @@ char* find_template_path(generator_settings settings, template_file tf) {
 	if (j == settings.path_count) return NULL;
 	return path;
 }
+
+void generator_run_embed(generator_settings settings, ctemplate tplt, template_file tf, replacement repl_, generator_context *ctx, const char* extension, forward_table fwd_table, int depth) {
+	if (check_embeded(ctx, tf)) {
+		return;
+	}
+
+	bool is_root = strcmp(extension, "root") == 0;
+	bool has_extension = check_has_extension(tf.infilename, extension);
+	if (!is_root && !has_extension) {
+		return;
+	}
+
+	char* path = find_template_path(settings, tf);
+	if (path == NULL) {
+		if (settings.verbose) printf("\033[33mWarn: Ignoring template file '%s'. Not found.\n\033[0m", tf.infilename);
+		return;
+	}
+
+	const replacement_item* found = NULL;
+	char* content = read_file(path);
+	ctx->read_contents[ctx->read_contentslen++]= content;
+	const char* cursor = content;
+	if (!cursor) {
+		if (settings.verbose) {
+			printf("\033[32mNotice: Something wrong with the read_file of: '%s'\n", path);
+			return;
+		}
+	}
+
+	// add tf to list of embeded files
+	ctx->embeded[ctx->embededlen++] = tf.infilename;
+
+	const char* segment_start = (const char*)0;
+	const char* segment_end   = (const char*)0;
+	int state = 0; // 0 - default, 1 - embed, 2 - replacement
+	while (1) {
+	}
+}
+
 #endif
