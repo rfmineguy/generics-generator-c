@@ -775,8 +775,13 @@ void generator_run2(generator_settings settings, ctemplate tplt, replacement rep
 			ll_long_string_print(&ctx.ll);
 		}
 		else {
-			assert(0 && "Non-dryrun not implemented");
-			// output the code in a file
+			FILE* f = fopen(outfilepath_actual, "w");
+			assert_(f != NULL, {
+				fprintf(stderr, "Couldn't open file '%s'... skipping to next template file...\n", outfilepath_actual);
+				continue;
+			});
+			ll_long_string_writefile(&ctx.ll, f);
+			fclose(f);
 		}
 	}
 	for (int i = 0; i < ctx.read_contentslen; i++) {
