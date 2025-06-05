@@ -648,6 +648,24 @@ void generator_run_embed(generator_settings settings, ctemplate tplt, template_f
 			}
 			break;
 		}
+		if (state == 0) {
+			if (!segment_start) segment_start = cursor;
+			if (strncmp(cursor, "#embed", strlen("#embed")) == 0) {
+				state = 1;
+			}
+			else if (strncmp(cursor, "#noembed", strlen("#noembed")) == 0) {
+				state = 3;
+			}
+			else if ((found = replacement_get(&repl_, cursor))) {
+				state = 2;
+			}
+			else {
+				state = 0;
+				cursor++;
+			}
+		}
+	}
+}
 	}
 }
 
