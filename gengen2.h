@@ -282,6 +282,55 @@ void template_adddep(ctemplate* tplt, ctemplate dep_tplt, forward_table fwd_tabl
 replacement replacement_create() {
 	return (replacement){.replacements = NULL, .replacements_count = 0, .replacements_capacity = 10};
 }
+
+/*
+ * forward replacements from 'from' to 'to' based on the 'with' forward table
+ * Example:
+ * from (replacement):
+ * 	'$T' -> 'int'
+ *  '^T' -> 'age'
+ * to (replacment):
+ * 	'@T' -> NULL
+ * 	'&T' -> NULL
+ * 	'PRINT' -> 'printf'
+ * 	'FREE'  -> 'free'
+ * with:
+ * 	.symbol='$T', .as='@T'
+ * 	.symbol='^T', .as='&T'
+ *
+ * expected:
+ *  '@T' -> 'int'
+ *  '^T' -> 'age'
+ */
+replacement replacement_forward(generator_settings settings, replacement to, replacement from, forward_table with) {
+	// assert(0 && "Implement new fowarding algorithm that supports the ");
+	replacement r = replacement_create();
+	for (int i = 0; i < with.fwd_items_count; i++) {
+		forward_item fwd = with.fwd_items[i];
+		if (settings.verbose)
+			printf("\033[33mForwarding: type=%d\n", fwd.type);
+
+	}
+
+	// when we get here, 'r' should contain all of the symbols from the forward table
+	// now we need add back in the symbols that already had valid replacements
+	for (int i = 0; i < to.replacements_count; i++) {
+		// 1. determine if this replacement is NULL. if not we simply add it into the new repalcement
+		if (to.replacements[i].with != NULL) {
+			switch (to.replacements[i].type) {
+				case 0: replacement_add(&r, to.replacements[i].needle, to.replacements[i].with);
+								break;
+				case 1: replacement_add(&r, to.replacements[i].needle, strdup(to.replacements[i].with));
+								r.replacements[r.replacements_count - 1].with_refcounter++;
+								break;
+				default: assert(0 && "Unsupported replacement type");
+			}
+			r.replacements[r.replacements_count - 1].type = to.replacements[i].type;
+		}
+	}
+
+	return r;
+}
 void replacement_add(replacement* repl, const char* needle, const char* with) {
 	if (repl->replacements_count == 0) {
 		repl->replacements = (replacement_item*)calloc(repl->replacements_capacity, sizeof(replacement));
