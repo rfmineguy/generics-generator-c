@@ -442,6 +442,32 @@ void replacement_add(replacement* repl, const char* needle, const char* with) {
 	replacement_item rep = {.needle = needle, .with = with, .with_refcounter = 0}; // static allocation of with
 	repl->replacements[repl->replacements_count++] = rep;
 }
+
+replacement_item* replacement_get(replacement* repl, const char* cursor) {
+	for (int i = 0; i < repl->replacements_count; i++) {
+		replacement_item *item = &repl->replacements[i];
+		size_t len = strlen(item->needle);
+		if (strncmp(cursor, item->needle, len) == 0)
+			return item;
+	}
+	return NULL;
+}
+
+/*
+ * Time Complexity
+ * O(n) in all cases
+ * @desc          Prints out the replacement data to stdout
+ * @param repl    The replacement context to search in
+ * @notes 				'repl' should have been created via 'replacement_create'
+ */
+void replacement_print(const replacement* repl) {
+	printf("Replacement {\n");
+	for (int i = 0; i < repl->replacements_count; i++) {
+		printf("\t{needle: %s, with: %s}\n", repl->replacements[i].needle, repl->replacements[i].with);
+	}
+	printf("}\n");
+}
+
 forward_table forward_table_create() {
 	return (forward_table){.fwd_items = NULL, .fwd_items_count = 0, .fwd_items_capacity = 10};
 }
@@ -460,6 +486,36 @@ void forward_table_forward(forward_table* fwd_table, forward_item fwd_item) {
 	}
 	fwd_table->fwd_items[fwd_table->fwd_items_count++] = fwd_item;
 }
+
+/* Private function */
+static char* read_file(const char* filepath) {
+	FILE* f = fopen(filepath, "r");
+	assert_(f, {
+		fprintf(stderr, "Failed to open '%s'\n", filepath);
+	});
+	fseek(f, 0, SEEK_END);
+	long size = ftell(f);
+	assert_(size != -1, {
+		fprintf(stderr, "Failed to ftell file '%s'. Reason: %s\n", filepath, strerror(errno));
+	})
+	fseek(f, 0, SEEK_SET);
+
+	char* buf = (char*)malloc((size_t)size + 1);
+	assert_(buf != NULL, {
+		fclose(f);
+		fprintf(stderr, "Malloc failed\n");
+	});
+	assert_(fread(buf, 1, (unsigned long)size, f) == size, { 
+		fclose(f);
+		free(buf);
+		fprintf(stderr, "Failed to read '%s'\n", filepath); 
+	});
+	buf[size] = 0;
+
+	fclose(f);
+	return buf;
+}
+
 void ll_long_string_pushback(long_string_ll* ll, const char* s, size_t len) {
 	assert(s && "s cannot be NULL");
 	long_string_node* n = (long_string_node*)calloc(1, sizeof(long_string_node));
