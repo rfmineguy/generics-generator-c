@@ -724,7 +724,32 @@ void generator_run_embed(generator_settings settings, ctemplate tplt, template_f
 		}
 	}
 }
+
+void generator_run2(generator_settings settings, ctemplate tplt, replacement repl_) {
+	generator_context ctx = {
+		.embeded = {0},
+		.embededlen = 0
+	};
+	ctx.ll = (long_string_ll){0};
+	for (int i = 0; i < tplt.template_files_count; i++) {
+		ll_long_string_free(&ctx.ll);
+		ctx.embededlen = 0;
+
+		template_file tf = tplt.template_files[i];
+		generator_run_embed(settings, tplt, tf, repl_, &ctx, "root", (forward_table){0}, 0);
+
+		if (settings.dryrun) {
+			ll_long_string_print(&ctx.ll);
+		}
+		else {
+			assert(0 && "Non-dryrun not implemented");
+			// output the code in a file
+		}
 	}
+	for (int i = 0; i < ctx.read_contentslen; i++) {
+		free((void*)ctx.read_contents[i]);
+	}
+	ll_long_string_free(&ctx.ll);
 }
 
 #endif
