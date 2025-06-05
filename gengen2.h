@@ -283,6 +283,18 @@ replacement replacement_create() {
 	return (replacement){.replacements = NULL, .replacements_count = 0, .replacements_capacity = 10};
 }
 
+void replacement_free(replacement* repl) {
+	for (int i = 0; i < repl->replacements_count; i++) {
+		replacement_item* item = &repl->replacements[i];
+		if (item->type == 1) {
+			item->with_refcounter--;
+			if (item->with_refcounter == 0)
+				free((char*)item->with);
+		}
+	}
+	free(repl->replacements);
+}
+
 /*
  * forward replacements from 'from' to 'to' based on the 'with' forward table
  * Example:
