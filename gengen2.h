@@ -220,3 +220,64 @@ void forward_table_forward(forward_table* fwd_table, forward_item fwd_item);
 void generator_run(generator_settings settings, ctemplate tplt, replacement repl);
 
 #endif
+
+#define GENGEN_IMPLEMENTATION
+#ifdef GENGEN_IMPLEMENTATION
+
+typedef struct long_string_node {
+	const char* content;
+	size_t length;
+
+	struct long_string_node *next, *prev;
+} long_string_node;
+
+typedef struct long_string_ll {
+	long_string_node *head, *tail;
+} long_string_ll;
+
+void ll_long_string_pushback(long_string_ll* ll, const char* s, size_t len) {
+	assert(s && "s cannot be NULL");
+	long_string_node* n = (long_string_node*)calloc(1, sizeof(long_string_node));
+	assert_(n, {
+		fprintf(stderr, "Failed to allocate linked list node\n");
+	});
+	n->content = s;
+	n->length = len;
+	if (ll->head == NULL || ll->tail == NULL) {
+		ll->head = n;
+		ll->tail = n;
+	}
+	else {
+		ll->tail->next = n;
+		n->prev = ll->tail;
+		ll->tail = n;
+	}
+}
+
+void ll_long_string_free(long_string_ll* ll) {
+	long_string_node* n = ll->head;
+	while (n) {
+		long_string_node* t = n;
+		n = n->next;
+		free(t);
+	}
+	ll->head = 0;
+	ll->tail = 0;
+}
+
+void ll_long_string_print(long_string_ll* ll) {
+	printf("==========================\n");
+	printf("\033[0mlong_string_ll print\n");
+	long_string_node* n = ll->head;
+	//int len = 0;
+	while (n) {
+		for (int i = 0; i < n->length; i++)
+			printf("%c", n->content[i]);
+		n = n->next;
+		//len++;
+	}
+	printf("'\n");
+	printf("==========================\n");
+	printf("\033[0m\n");
+}
+#endif
