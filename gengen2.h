@@ -664,6 +664,50 @@ void generator_run_embed(generator_settings settings, ctemplate tplt, template_f
 				cursor++;
 			}
 		}
+		if (state == 1) { // embed
+			segment_end = cursor;
+			ll_long_string_pushback(&ctx->ll, segment_start, segment_end - segment_start);
+			cursor += strlen("#embed");
+
+			while (*cursor == ' ') cursor++;
+
+			assert_(isdigit(*cursor), {
+				fprintf(stderr, "Expected digit after embed\n");
+			});
+
+			// parse embed loc
+			char* endp = 0;
+			int embed_location = strtol(cursor, &endp, 10);
+			cursor = endp;
+			while (*cursor == ' ') cursor++;
+
+			// parse extension
+			const char* extension_begin = cursor;
+			while (*cursor != '\n') cursor++;
+			char* extension_end = (char*) cursor;
+
+			*extension_end = 0;
+			cursor = extension_end + 1;
+
+			// attempt to embed dependencies
+			for (int i = 0; i < tplt.deps_count; i++) {
+				dependency d = tplt.deps[i];
+				if (!d.settings.embed) continue;
+				forward_table fwd = d.fwd_table;
+
+				if (d.settings.embedloc == embed_location) {
+					for (int j = 0; j < d.template_.template_files_count; j++) {
+						template_file tf_ = d.template_.template_files[j];
+						replacement rforward = replacement_forward(settings, d.template_.replacement, repl_, fwd);
+						generator_run_embed(settings, d.template_, tf_, rforward, ctx, extension_begin, fwd, depth + 1);
+						replacement_free(&rforward);
+					}
+				}
+			}
+
+			segment_start = 0;
+			state = 0;
+		}
 		if (state == 2) { // replacement
 			segment_end = cursor;
 			cursor += strlen(found->needle);
