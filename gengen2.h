@@ -310,6 +310,37 @@ replacement replacement_forward(generator_settings settings, replacement to, rep
 		if (settings.verbose)
 			printf("\033[33mForwarding: type=%d\n", fwd.type);
 
+		// If the forward item is 'normal' (1) perform the normal forwarding logic
+		if (fwd.type == 1) {
+			int j = 0;
+			// 1. find replacement in 'to' whose needle is equal to fwd.as
+			for (j = 0; j < to.replacements_count; j++) {
+				if (strncmp(to.replacements[j].needle, fwd.as, strlen(fwd.as)) == 0) {
+					break;
+				}
+			}
+
+			// if j is bigger than the replacement count we didnt find one
+			//    j represents the index of the replacement in 'to' we are forwarding to
+			if (j >= to.replacements_count) continue;
+
+			int k = 0;
+			// 2. find replacement in 'from' whose needle is equal to fwd.symbol
+			for (k = 0; k < from.replacements_count; k++) {
+				if (from.replacements[k].needle == fwd.normal.symbol) {
+					break;
+				}
+			}
+
+			// if k is bigger than the replacement count we didnt find one
+			//    k represents the index of the replacement in 'from' we are forwarding from
+			if (k >= from.replacements_count) continue;
+
+			// at this point 'j' and 'k' should have valid indices
+			// we need to set the .needle of to.replacments[j] equal to the .with of from.replacements[k]
+			replacement_add(&r, to.replacements[j].needle, from.replacements[k].with);
+			r.replacements[r.replacements_count - 1].type = 0;
+		}
 	}
 
 	// when we get here, 'r' should contain all of the symbols from the forward table
