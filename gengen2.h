@@ -235,6 +235,49 @@ typedef struct long_string_ll {
 	long_string_node *head, *tail;
 } long_string_ll;
 
+ctemplate template_create(const char* name) {
+  return (ctemplate) {
+		.template_name = name,
+		.template_files = NULL,
+		.template_files_count = 0,
+		.template_files_cap = 10,
+		.deps_count = 0,
+		.deps_cap = 10,
+		.replacement = replacement_create()};
+}
+
+void template_free(ctemplate* tplt) {
+	free(tplt->template_files);
+	free(tplt->deps);
+	replacement_free(&tplt->replacement);
+}
+
+void template_addfile(ctemplate* tplt, const char* templatepath, const char* templatefmt) {
+	template_file file = (template_file){templatepath, templatefmt};
+	if (tplt->template_files_count == 0) {
+		tplt->template_files = (template_file*)calloc(tplt->template_files_cap, sizeof(ctemplate));
+	}
+	else if (tplt->template_files_count + 1 >= tplt->template_files_cap) {
+		tplt->template_files = (template_file*)realloc(tplt->template_files, tplt->template_files_cap * 2);
+		tplt->template_files_cap *= 2;
+	}
+	tplt->template_files[tplt->template_files_count++] = file;
+}
+
+void template_addreplacement(ctemplate *tplt, const char *symbol, const char *with) {
+	replacement_add(&tplt->replacement, symbol, with);
+}
+
+void template_adddep(ctemplate* tplt, ctemplate dep_tplt, forward_table fwd_table, dependency_settings dep_settings) {
+	if (tplt->deps_count == 0) {
+		tplt->deps = (dependency*)calloc(tplt->deps_cap, sizeof(dependency));
+	}
+	if (tplt->deps_count + 1 >= tplt->deps_cap) {
+		tplt->deps = (dependency*)realloc(tplt->deps, tplt->deps_cap * 2 * sizeof(dependency));
+		tplt->deps_cap *= 2;
+	}
+	tplt->deps[tplt->deps_count++] = (dependency){.fwd_table = fwd_table, .template_ = dep_tplt, .settings = dep_settings};
+}
 void ll_long_string_pushback(long_string_ll* ll, const char* s, size_t len) {
 	assert(s && "s cannot be NULL");
 	long_string_node* n = (long_string_node*)calloc(1, sizeof(long_string_node));
