@@ -735,12 +735,36 @@ void generator_run_embed(generator_settings settings, ctemplate tplt, template_f
 }
 
 void generator_run2(generator_settings settings, ctemplate tplt, replacement repl_) {
+	static char outfilepath_realpath[PATH_MAX];
+	static char outfilepath_actual[PATH_MAX];
+
 	generator_context ctx = {
 		.embeded = {0},
 		.embededlen = 0
 	};
 	ctx.ll = (long_string_ll){0};
 	for (int i = 0; i < tplt.template_files_count; i++) {
+		// Figure out where to generate the template to
+		assert_(realpath(settings.outdir, outfilepath_realpath) != NULL, {
+			fprintf(stderr, "Failed to realpath. '%s' doesn't exist\n", settings.outdir);
+			return;
+		});
+		strncpy(outfilepath_actual, outfilepath_realpath, PATH_MAX);
+		strncat(outfilepath_actual, "/", PATH_MAX);
+		const char* cursorfp = tplt.template_files[i].outfilename_fmt;
+		const replacement_item* found = NULL;
+		while (*cursorfp) {
+			if ((found = replacement_get(&repl_, cursorfp))) {
+				strncat(outfilepath_actual, found->with, PATH_MAX);
+				cursorfp += strlen(found->needle);
+			}
+			else {
+				strncat(outfilepath_actual, cursorfp, 1);
+				cursorfp++;
+			}
+		}
+
+		// Perform generation
 		ll_long_string_free(&ctx.ll);
 		ctx.embededlen = 0;
 
