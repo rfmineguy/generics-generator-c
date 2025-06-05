@@ -576,4 +576,12 @@ bool check_has_extension(const char* str, const char* extension) {
 	while (*cursor && *cursor != '.') cursor++;
 	return strncmp(cursor, extension, strlen(extension)) == 0;
 }
+
+bool check_embeded(generator_context* ctx, template_file tf) {
+	for (int i = 0; i < 10; i++) {
+		if (!ctx->embeded[i]) continue;
+		if (strcmp(ctx->embeded[i], tf.infilename) == 0) return true;
+	}
+	return false;
+}
 #endif
