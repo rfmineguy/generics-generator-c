@@ -341,6 +341,63 @@ replacement replacement_forward(generator_settings settings, replacement to, rep
 			replacement_add(&r, to.replacements[j].needle, from.replacements[k].with);
 			r.replacements[r.replacements_count - 1].type = 0;
 		}
+		// If the forward item is 'formatted' (2) perform formatted forwarding
+		else if (fwd.type == 2) {
+			// Setup the format string
+			const char* fmtString = fwd.formatted.fmt;
+
+			// Calculate how long the final formatted string will be
+			const char* cursor = fmtString;
+			char* formattedString = (char*)calloc(strlen(fmtString), sizeof(char));
+			size_t formattedStringLen = 0;
+			size_t formattedStringCap = strlen(fmtString);
+			
+			// Create the final formatted string
+			// int state = 0;
+			const char* beginfmtspec = NULL;
+			const char* endfmtspec = NULL;
+			while (*cursor) {
+				if (*cursor == '{') {
+					beginfmtspec = cursor + 1;
+					while (*cursor && *cursor != '}') cursor++;
+					endfmtspec = cursor;
+
+					int k = 0;
+					// find replacement for this fmt specifier
+					for (k = 0; k < from.replacements_count; k++) {
+						if (strncmp(from.replacements[k].needle, beginfmtspec, endfmtspec - beginfmtspec) == 0) {
+							if (formattedStringLen + strlen(from.replacements[k].with) >= formattedStringCap) {
+								formattedString = (char*)realloc(formattedString, formattedStringCap * 2);
+								assert_(formattedString, {
+									free(formattedString);
+									formattedString = 0;
+								});
+								formattedStringCap *= 2;
+							}
+							strncat(formattedString, from.replacements[k].with, formattedStringCap);
+							formattedStringLen += strlen(from.replacements[k].with);
+
+							break;
+						}
+					}
+					cursor++;
+					continue;
+				}
+				formattedString[formattedStringLen++] = *cursor;
+				cursor++;
+			}
+			formattedString[formattedStringLen] = 0;
+
+			// Find where this argument gets forwarded
+			for (int j = 0; j < to.replacements_count; j++) {
+				if (strncmp(to.replacements[j].needle, fwd.as, strlen(fwd.as)) == 0) {
+					replacement_add(&r, to.replacements[j].needle, formattedString);
+					r.replacements[r.replacements_count - 1].type = 1;
+					break;
+				}
+			}
+			if (settings.verbose) printf("\033[33mFormatted: %s\n", formattedString);
+		}
 	}
 
 	// when we get here, 'r' should contain all of the symbols from the forward table
