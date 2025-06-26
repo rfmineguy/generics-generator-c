@@ -1,0 +1,30 @@
+#include "quadtree_$T.h"
+
+bool qt_$T_check_point_region(quadtree_region_$T region, quadtree_point_$T point) {
+	return point.x >  region.tlx &&
+				 point.x <= region.brx &&
+				 point.y >  region.tly &&
+				 point.y <= region.bry;
+
+}
+
+quadtree_$T qt_$T_new(quadtree_region_$T region) {
+	quadtree_$T qt = {0};
+	qt.main = (quadtree_node_$T){.items = 0, .region = region};
+	return qt;
+}
+void qt_$T_free_node(quadtree_node_$T* node) {
+	for (int i = 0; i < node->items_count; i++) {
+		qt_$T_free_node(&node->items[i]);
+	}
+	free(node);
+}
+void qt_$T_free(quadtree_$T* qt) {
+	qt_$T_free_node(&qt->main);
+}
+void qt_$T_insert(quadtree_$T* qt, $T item, quadtree_point_$T point) {
+	if (qt->items_count < 4 && qt_$T_check_point_region(qt->region, point)) {
+		qt->items[qt->items_count++] = (quadtree_item_$T) {.val = item, .point = point};
+	}
+	if (qt->
+}

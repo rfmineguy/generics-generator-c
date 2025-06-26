@@ -1,0 +1,35 @@
+#ifndef QUADTREE_$T_H
+#define QUADTREE_$T_H
+
+typedef struct quadtree_point_$T {
+	int x, y;
+} quadtree_point_$T;
+
+typedef struct quadtree_region_$T {
+	int tlx, tly, brx, bry;
+} quadtree_region_$T;
+
+typedef struct quadtree_item_$T {
+	$T val;
+	quadtree_point_$T point;
+} quadtree_item_$T;
+
+typedef struct quadtree_node_$T {
+	quadtree_item_$T *items;
+	int items_count, max_items;
+
+	quadtree_region_$T region;
+	quadtree_node_$T quadrants[4];
+} quadtree_node_$T;
+
+typedef struct quadtree_$T {
+	quadtree_node_$T main;
+} quadtree_$T;
+
+bool 				qt_$T_check_point_region(quadtree_region_$T, quadtree_point_$T);
+
+quadtree_$T qt_$T_new(quadtree_region_$T);
+void  			qt_$T_free(quadtree_$T*);
+void 				qt_$T_insert(quadtree_$T*, $T, quadtree_point_$T);
+
+#endif
