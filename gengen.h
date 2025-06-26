@@ -10,9 +10,21 @@
 #include <stdbool.h>
 
 typedef struct {
-	const char *symbol, *as;
+	union {
+		struct {
+			const char *symbol;
+		} normal;
+		struct {
+			const char* fmt;
+		} formatted;
+	};
+	int type; // 0 = undef, 1 = normal, 2 = formatted
+	const char *as;
 } forward_item;
 #define fwd(...) (forward_item) {__VA_ARGS__}
+#define symbollit(sym) .normal.symbol=sym, .type = 1
+#define symbolfmt(fmt_, ...) .formatted.fmt=fmt_,\
+														 .type = 2
 
 typedef struct {
 	forward_item *fwd_items;
@@ -67,9 +79,10 @@ typedef struct generator_settings {
 	size_t path_count;
 	const char* outdir;
 	bool verbose;
+	bool embed_deps; // ?
 } generator_settings;
-#define settings_default() (generator_settings) {.search_path={"."}}
-#define settings_custom(...) (generator_settings) {__VA_ARGS__}
+#define gen_settings_def() (generator_settings) {.search_path={"."}}
+#define gen_settings(...) (generator_settings) {__VA_ARGS__}
 #define paths(...) (path[]){__VA_ARGS__}, .path_count = (sizeof((path[]){__VA_ARGS__})/sizeof(path))
 
 /*
@@ -134,7 +147,7 @@ void replacement_print(const replacement* repl);
  * @return 			A new replacement instance 
  * @notes 			Returned instance must be freed with replacement_free
  */
-replacement replacement_forward(replacement tplt, replacement dep_tplt, forward_table with); 
+replacement replacement_forward(generator_settings settings, replacement tplt, replacement dep_tplt, forward_table with); 
 
 /*
  * @desc 					Adds a replacement item to this replacement context
@@ -196,7 +209,7 @@ void generator_run(generator_settings settings, ctemplate tplt, replacement repl
 
 #endif
 
-// #define GENGEN_IMPLEMENTATION
+#define GENGEN_IMPLEMENTATION
 #ifdef GENGEN_IMPLEMENTATION
 
 ctemplate template_create(const char* name) {
@@ -268,37 +281,96 @@ void replacement_free(replacement* repl) {
  *  '@T' -> 'int'
  *  '^T' -> 'age'
  */
-replacement replacement_forward(replacement to, replacement from, forward_table with) {
+replacement replacement_forward(generator_settings settings, replacement to, replacement from, forward_table with) {
+	// assert(0 && "Implement new fowarding algorithm that supports the ");
 	replacement r = replacement_create();
 	for (int i = 0; i < with.fwd_items_count; i++) {
-		int j = 0;
-		// 1. find replacement in 'to' whose needle is equal to fwd.as
 		forward_item fwd = with.fwd_items[i];
-		for (j = 0; j < to.replacements_count; j++) {
-			if (to.replacements[j].needle == fwd.as) {
-				break;
+		if (settings.verbose)
+			printf("\033[33mForwarding: type=%d\n", fwd.type);
+
+		// If the forward item is 'normal' (1) perform the normal forwarding logic
+		if (fwd.type == 1) {
+			int j = 0;
+			// 1. find replacement in 'to' whose needle is equal to fwd.as
+			for (j = 0; j < to.replacements_count; j++) {
+				if (strncmp(to.replacements[j].needle, fwd.as, strlen(fwd.as)) == 0) {
+					break;
+				}
 			}
-		}
 
-		// if j is bigger than the replacement count we didnt find one
-		//    j represents the index of the replacement in 'to' we are forwarding to
-		if (j >= to.replacements_count) continue;
+			// if j is bigger than the replacement count we didnt find one
+			//    j represents the index of the replacement in 'to' we are forwarding to
+			if (j >= to.replacements_count) continue;
 
-		int k = 0;
-		// 2. find replacement in 'from' whose needle is equal to fwd.symbol
-		for (k = 0; k < from.replacements_count; k++) {
-			if (from.replacements[k].needle == fwd.symbol) {
-				break;
+			int k = 0;
+			// 2. find replacement in 'from' whose needle is equal to fwd.symbol
+			for (k = 0; k < from.replacements_count; k++) {
+				if (from.replacements[k].needle == fwd.normal.symbol) {
+					break;
+				}
 			}
+
+			// if k is bigger than the replacement count we didnt find one
+			//    k represents the index of the replacement in 'from' we are forwarding from
+			if (k >= from.replacements_count) continue;
+
+			// at this point 'j' and 'k' should have valid indices
+			// we need to set the .needle of to.replacments[j] equal to the .with of from.replacements[k]
+			replacement_add(&r, to.replacements[j].needle, from.replacements[k].with);
 		}
+		// If the forward item is 'formatted' (2) perform formatted forwarding
+		else if (fwd.type == 2) {
+			// Setup the format string
+			const char* fmtString = fwd.formatted.fmt;
 
-		// if k is bigger than the replacement count we didnt find one
-		//    k represents the index of the replacement in 'from' we are forwarding from
-		if (k >= from.replacements_count) continue;
+			// Calculate how long the final formatted string will be
+			const char* cursor = fmtString;
+			char* formattedString = (char*)calloc(strlen(fmtString), sizeof(char));
+			size_t formattedStringLen = 0;
+			size_t formattedStringCap = strlen(fmtString);
+			
+			// Create the final formatted string
+			int state = 0;
+			const char* beginfmtspec = NULL;
+			const char* endfmtspec = NULL;
+			while (*cursor) {
+				if (*cursor == '{') {
+					beginfmtspec = cursor + 1;
+					while (*cursor && *cursor != '}') cursor++;
+					endfmtspec = cursor;
 
-		// at this point 'j' and 'k' should have valid indices
-		// we need to set the .needle of to.replacments[j] equal to the .with of from.replacements[k]
-		replacement_add(&r, to.replacements[j].needle, from.replacements[k].with);
+					int k = 0;
+					// find replacement for this fmt specifier
+					for (k = 0; k < from.replacements_count; k++) {
+						if (strncmp(from.replacements[k].needle, beginfmtspec, endfmtspec - beginfmtspec) == 0) {
+							if (formattedStringLen + strlen(from.replacements[k].with) >= formattedStringCap) {
+								formattedString = (char*)realloc(formattedString, formattedStringCap * 2);
+								formattedStringCap *= 2;
+							}
+							strncat(formattedString, from.replacements[k].with, formattedStringCap);
+							formattedStringLen += strlen(from.replacements[k].with);
+
+							break;
+						}
+					}
+					cursor++;
+					continue;
+				}
+				formattedString[formattedStringLen++] = *cursor;
+				cursor++;
+			}
+			formattedString[formattedStringLen] = 0;
+
+			// Find where this argument gets forwarded
+			for (int j = 0; j < to.replacements_count; j++) {
+				if (strncmp(to.replacements[j].needle, fwd.as, strlen(fwd.as)) == 0) {
+					replacement_add(&r, to.replacements[j].needle, formattedString);
+					break;
+				}
+			}
+			printf("\033[33mFormatted: %s\n", formattedString);
+		}
 	}
 
 	// when we get here, 'r' should contain all of the symbols from the forward table
@@ -399,8 +471,9 @@ static char* read_file(const char* filepath) {
 
 void generator_run(generator_settings settings, ctemplate ctemplate, replacement replacement_) {
 	if (settings.verbose) {
-		printf("\033[33mInfo: Generating template '%s'\033[0m\n", ctemplate.template_name);
+		printf("\033[33mInfo: Generating template '%s'\n", ctemplate.template_name);
 		replacement_print(&replacement_);
+		printf("\033[0m\n");
 	}
 	// 1. Read in the template file
 	static char path[PATH_MAX];
@@ -509,7 +582,7 @@ skip_dependency_gen:
 		for (int z = 0; z < ctemplate.deps_count; z++) {
 			forward_table fwd = ctemplate.deps[z].fwd_table;
 			replacement parent = replacement_;
-			replacement r = replacement_forward(ctemplate.deps[z].template_.replacement, parent, fwd);
+			replacement r = replacement_forward(settings, ctemplate.deps[z].template_.replacement, parent, fwd);
 			generator_run(settings, ctemplate.deps[z].template_, r);
 			replacement_free(&r);
 		}

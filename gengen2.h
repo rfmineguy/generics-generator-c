@@ -1,5 +1,6 @@
 #ifndef GENGEN_H
 #define GENGEN_H
+#include <signal.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
@@ -465,7 +466,7 @@ replacement_item* replacement_get(replacement* repl, const char* cursor) {
 void replacement_print(const replacement* repl) {
 	printf("Replacement {\n");
 	for (int i = 0; i < repl->replacements_count; i++) {
-		printf("\t{needle: %s, with: %s}\n", repl->replacements[i].needle, repl->replacements[i].with);
+		printf("\t{needle: %s, with: %s, %p}\n", repl->replacements[i].needle, repl->replacements[i].with, repl->replacements[i].with);
 	}
 	printf("}\n");
 }
@@ -628,6 +629,7 @@ void generator_run_embed(generator_settings settings, ctemplate tplt, template_f
 		return;
 	}
 
+	replacement_print(&repl_);
 	char* path = find_template_path(settings, tf);
 	if (path == NULL) {
 		verbose_fprintf(stdout, "\033[33mWarn: Ignoring template file '%s'. Not found.\n\033[0m", tf.infilename);
