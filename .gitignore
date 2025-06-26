@@ -2,3 +2,6 @@ tests/unit/main*
 tests/out/
 
 tests/integration/output/
+sample_usage/a.out
+sample_usage/build
+sample_usage/build.dSYM
