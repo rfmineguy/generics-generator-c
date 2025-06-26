@@ -38,7 +38,7 @@ int main() {
 	forward_table fwd_q_ll = forward_table_create();
 	forward_table_forward(&fwd_q_ll, fwd(symbollit("$T"), .as="$T"));
 	forward_table_forward(&fwd_q_ll, fwd(symbollit("^T"), .as="^T"));
-	template_adddep(&queue, linkedlist, fwd_q_ll, dep_settings());
+	template_adddep(&queue, linkedlist, fwd_q_ll, dep_settings(.embed=true, .embedloc=0));
 
 	forward_table fwd_bst_ll = forward_table_create();
 	forward_table_forward(&fwd_bst_ll, fwd(symbolfmt("{$KEY}_{$VAL}"), .as="$T"));
@@ -65,13 +65,9 @@ int main() {
 
 	replacement queue_long = replacement_create();
 	replacement_add(&queue_long, "$T",  "long");
-	replacement_add(&queue_long, "^T",  "long");
-
-	// generator_run(settings_custom(.search_paths=paths("demo_templates", "."), .outdir="."), linkedlist, ll_int);
-	// generator_run(settings_custom(.search_paths=paths("demo_templates", "."), .outdir="."), linkedlist, ll_string);
-	// generator_run(settings_custom(.search_paths=paths("demo_templates", "."), .outdir="."), queue     , queue_int);
-	// generator_run(settings_custom(.search_paths=paths("demo_templates", "."), .outdir="."), queue     , queue_long);
-	generator_run2(gen_settings(.embed_deps = true, .verbose = false, .dryrun = true, .search_paths=paths("demo_templates", "."), .outdir="output"), binarytree, bst_string_int);
+	generator_run(gen_settings(.verbose = true, .embed_deps = true, .search_paths=paths("demo_templates", "."), .outdir="output"), queue     , queue_int);
+	generator_run(gen_settings(.verbose = true, .embed_deps = true, .dryrun = false, .search_paths=paths("demo_templates", "."), .outdir="output"), binarytree, bst_string_int);
+	generator_run(gen_settings(.verbose = true, .embed_deps = false, .dryrun = false, .search_paths=paths("demo_templates", "."), .outdir="output"), linkedlist, ll_string);
 
 	template_free(&linkedlist);
 	template_free(&binarytree);
