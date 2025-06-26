@@ -652,9 +652,7 @@ void generator_run_embed(generator_settings settings, ctemplate tplt, template_f
 	while (1) {
 		if (*cursor == 0) {
 			segment_end = cursor;
-			if (segment_start) {
-				ll_long_string_pushback(&ctx->ll, segment_start, segment_end - segment_start);
-			}
+			ll_long_string_pushback(&ctx->ll, segment_start, segment_end - segment_start);
 			break;
 		}
 		if (state == 0) {
@@ -719,6 +717,11 @@ void generator_run_embed(generator_settings settings, ctemplate tplt, template_f
 		}
 		if (state == 2) { // replacement
 			segment_end = cursor;
+			// if (strcmp(found->needle, "PRINT") == 0) {
+			// 	printf("Found PRINT replacement: %.*s\n", 20, cursor);
+			// 	printf("Replace with: %s\n", found->with);
+			// 	raise(SIGINT);
+			// }
 			cursor += strlen(found->needle);
 			ll_long_string_pushback(&ctx->ll, segment_start, segment_end - segment_start);
 			ll_long_string_pushback(&ctx->ll, found->with, strlen(found->with));
@@ -734,13 +737,15 @@ void generator_run_embed(generator_settings settings, ctemplate tplt, template_f
 	}
 }
 
-void generator_run2(generator_settings settings, ctemplate tplt, replacement repl_) {
+void generator_run(generator_settings settings, ctemplate tplt, replacement repl_) {
 	static char outfilepath_realpath[PATH_MAX];
 	static char outfilepath_actual[PATH_MAX];
 
 	generator_context ctx = {
 		.embeded = {0},
-		.embededlen = 0
+		.embededlen = 0,
+		.read_contents = {0},
+		.read_contentslen = 0,
 	};
 	ctx.ll = (long_string_ll){0};
 	for (int i = 0; i < tplt.template_files_count; i++) {
