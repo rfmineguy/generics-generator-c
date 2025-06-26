@@ -14,6 +14,7 @@ ll_$T ll_$T_create();
 void  ll_$T_free(ll_$T*);
 void  ll_$T_pushback(ll_$T*, ^T);
 void  ll_$T_popback(ll_$T*);
-^T    ll_$T_peekback(ll_$T*);
+^T*   ll_$T_peekback(ll_$T*);
+void  ll_$T_print(ll_$T*);
 
 #endif

@@ -1,11 +1,43 @@
 #include "bst_$KEY_$VAL.h"
+#include <assert.h>
 #embed 0 .ctpl
+#include "../spec/bst_spec_$KEY_$VAL.c"
+
+/*
+ * int bst_$KEY_$VAL_hash(^KEY key);
+ *    - generate a hash index for 'key'
+ */
 
 bst_$KEY_$VAL bst_$KEY_$VAL_create() {
+	return (bst_$KEY_$VAL) {0};
 }
-void bst_$KEY_$VAL_put(^KEY key, ^VAL val) {
+void bst_$KEY_$VAL_put(bst_$KEY_$VAL* bst, ^KEY key, ^VAL val) {
+	int hash = bst_$KEY_$VAL_hash(key) % 10;
+	ll_$KEY_$VAL* ll = &bst->buckets[hash];
+	ll_$KEY_$VAL_pushback(ll, (bst_data_node_$KEY_$VAL){.key = key, .val = val});
 }
-^VAL* bst_$KEY_$VAL_getptr(^KEY key) {
+
+^VAL* bst_$KEY_$VAL_getptr(bst_$KEY_$VAL* bst, ^KEY key) {
+	int hash = bst_$KEY_$VAL_hash(key) % 10;
+	ll_$KEY_$VAL* ll = &bst->buckets[hash];
+	ll_node_$KEY_$VAL* n = ll->head;
+	while (n) {
+		if (bst_$KEY_$VAL_comparekey(n->val.key, key) == 0) {
+			return &n->val.val;
+		}
+		n = n->next;
+	}
+	return 0;
 }
-void bst_$KEY_$VAL_get(^KEY key) {
+
+bool bst_$KEY_$VAL_contains(bst_$KEY_$VAL* bst, ^KEY key) {
+	return bst_$KEY_$VAL_getptr(bst, key) != 0;
+}
+
+void bst_$KEY_$VAL_print(bst_$KEY_$VAL* bst) {
+	for (int i = 0; i < 10; i++) {
+		printf("%d: ", i)
+		ll_$KEY_$VAL_print(&bst->buckets[i]);
+		printf("\n");
+	}
 }

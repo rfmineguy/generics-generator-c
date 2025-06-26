@@ -1,20 +1,22 @@
 #ifndef BIN_SEARCH_TREE_$KEY_$VAL_H
 #define BIN_SEARCH_TREE_$KEY_$VAL_H
+#include <stdbool.h>
 
 typedef struct bst_data_node_$KEY_$VAL {
 	^KEY key;
 	^VAL val;
 } bst_data_node_$KEY_$VAL;
 
+#embed 0 .htpl
+
 typedef struct bst_$KEY_$VAL {
 	ll_$KEY_$VAL buckets[10];
 } bst_$KEY_$VAL;
 
-#embed 0 .htpl
-
 bst_$KEY_$VAL   bst_$KEY_$VAL_create();
-void            bst_$KEY_$VAL_put(^KEY key, ^VAL val);
-^VAL*           bst_$KEY_$VAL_getptr(^KEY key);
-void            bst_$KEY_$VAL_get(^KEY key);
+void            bst_$KEY_$VAL_put(bst_$KEY_$VAL* bst, ^KEY key, ^VAL val);
+^VAL*           bst_$KEY_$VAL_getptr(bst_$KEY_$VAL* bst, ^KEY key);
+bool            bst_$KEY_$VAL_contains(bst_$KEY_$VAL* bst, ^KEY key);
+void 						bst_$KEY_$VAL_print(bst_$KEY_$VAL* bst);
 
 #endif

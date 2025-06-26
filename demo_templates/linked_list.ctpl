@@ -1,5 +1,6 @@
 #noembed #include "linked_list_$T.h"
-#include "linked_list_spec_$T.c"
+#include "../spec/linked_list_spec_$T.c"
+#include <stdlib.h>
 
 /*
  * ll_$T_custom_free(ll_node_$T);
@@ -7,21 +8,54 @@
  */
 
 ll_$T ll_$T_create() {
-	// TODO: Not Implemented
+	return (ll_$T) {.head = 0, .tail = 0};
 }
  
 void  ll_$T_free(ll_$T* ll) {
-	// TODO: Not Implemented
+	ll_node_$T* n = ll->head;
+	while (n) {
+		ll_node_$T** t = &n;
+		n = n->next;
+		ll_$T_custom_free(*t);
+		FREE(*t);
+		*t = 0;
+	}
 }
 
 void  ll_$T_pushback(ll_$T* ll, ^T val) {
-	// TODO: Not Implemented
+	ll_node_$T * n = CALLOC(1, sizeof(ll_node_$T));
+	assert(n && "Pushback allocation failed");
+	n->val = val;
+	if (ll->head == 0 && ll->tail == 0) {
+		ll->head = n;
+		ll->tail = ll->head;
+		return;
+	}
+	else {
+		ll->tail->next = n;
+		n->prev = ll->tail;
+		ll->tail = n;
+	}
 }
 
 void  ll_$T_popback(ll_$T* ll) {
-	// TODO: Not Implemented
+	if (ll->head == 0) return;
+	ll_node_$T* n = ll->tail;
+	ll->tail = ll->tail->prev;
+	ll_$T_custom_free(n);
+	FREE(n);
 }
 
-^T    ll_$T_peekback(ll_$T* ll) {
-	// TODO: Not Implemented
+^T*   ll_$T_peekback(ll_$T* ll) {
+	if (ll->head == 0) return 0;
+	return &ll->tail->val;
+}
+
+void  ll_$T_print(ll_$T* ll) {
+	ll_node_$T* n = ll->head;
+	while (n) {
+		ll_$T_print_node(n);
+		printf(", ");
+		n = n->next;
+	}
 }
