@@ -97,6 +97,9 @@ typedef struct generator_settings {
 #define gen_settings(...) (generator_settings) {__VA_ARGS__}
 #define paths(...) (path[]){__VA_ARGS__}, .path_count = (sizeof((path[]){__VA_ARGS__})/sizeof(path))
 
+#define verbose_fprintf(fd, fmt, ...)\
+	if (settings.verbose) fprintf(fd, __FILE__ ":%d  " fmt, __LINE__, __VA_ARGS__)
+
 /*
  * @desc 			  Creates and initializes a ctemplate for use later
  * @notes 			Must be cleaned up with template_free
@@ -319,8 +322,7 @@ replacement replacement_forward(generator_settings settings, replacement to, rep
 	replacement r = replacement_create();
 	for (int i = 0; i < with.fwd_items_count; i++) {
 		forward_item fwd = with.fwd_items[i];
-		if (settings.verbose)
-			printf("\033[33mForwarding: type=%d\n", fwd.type);
+		verbose_fprintf(stdout, "\033[33mForwarding: type=%d\n", fwd.type);
 
 		// If the forward item is 'normal' (1) perform the normal forwarding logic
 		if (fwd.type == 1) {
@@ -408,7 +410,7 @@ replacement replacement_forward(generator_settings settings, replacement to, rep
 					break;
 				}
 			}
-			if (settings.verbose) printf("\033[33mFormatted: %s\n", formattedString);
+			verbose_fprintf(stdout, "\033[33mFormatted: %s\n", formattedString);
 		}
 	}
 
@@ -628,7 +630,7 @@ void generator_run_embed(generator_settings settings, ctemplate tplt, template_f
 
 	char* path = find_template_path(settings, tf);
 	if (path == NULL) {
-		if (settings.verbose) printf("\033[33mWarn: Ignoring template file '%s'. Not found.\n\033[0m", tf.infilename);
+		verbose_fprintf(stdout, "\033[33mWarn: Ignoring template file '%s'. Not found.\n\033[0m", tf.infilename);
 		return;
 	}
 
@@ -637,10 +639,8 @@ void generator_run_embed(generator_settings settings, ctemplate tplt, template_f
 	ctx->read_contents[ctx->read_contentslen++]= content;
 	const char* cursor = content;
 	if (!cursor) {
-		if (settings.verbose) {
-			printf("\033[32mNotice: Something wrong with the read_file of: '%s'\n", path);
-			return;
-		}
+		verbose_fprintf(stdout, "\033[32mNotice: Something wrong with the read_file of: '%s'\n", path);
+		return;
 	}
 
 	// add tf to list of embeded files
