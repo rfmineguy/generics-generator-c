@@ -2,7 +2,7 @@
 #define ALL_TESTS_H
 #include "../lib/munit_ext.h"
 #include "../lib/munit.h"
-#include "../../gengen.h"
+#include "../../gengen2.h"
 
 /* ===== SETTINGS ===== */
 static MunitResult test_settings_custom_empty_paths(const MunitParameter params[], void *userdata);

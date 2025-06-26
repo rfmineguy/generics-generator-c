@@ -1,0 +1,16 @@
+#ifndef BIN_SEARCH_TREE_$T_H
+#define BIN_SEARCH_TREE_$T_H
+
+typedef struct bst_data_node_$KEY_$VAL {
+	^KEY key;
+	^VAL val;
+} bst_data_node_$KEY_$VAL;
+
+#include "linked_list_bst_data_node_$KEY_$VAL.h"
+
+typedef struct bst_$KEY_$VAL {
+	ll_bst_data_node_$KEY_$VAL buckets[10];
+} bst_$KEY_$VAL;
+
+
+#endif

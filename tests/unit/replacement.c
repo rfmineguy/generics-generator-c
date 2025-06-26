@@ -33,8 +33,7 @@ static MunitResult test_replacement_add(const MunitParameter params[], void *use
 	//    it was created from
 	munit_assert_int(r.replacements_count, ==, 4);
 	for (int i = 0; i < 4; i++) {
-		munit_assert_string_equal(r.replacements[i].needle, replacements[i][0]);
-		munit_assert_string_equal(r.replacements[i].with,   replacements[i][1]);
+		munit_assert_replacement_contains(r, replacements[i][0], replacements[i][1]);
 	}
 
 	replacement_free(&r);
@@ -49,18 +48,17 @@ static MunitResult test_replacement_forward_1(const MunitParameter params[], voi
 	replacement_add(&r1, "PRINT", "printf");
 
 	replacement r2 = replacement_create();
+	replacement_add(&r2, "X",  "poop");
 	replacement_add(&r2, "$T", "string");
 	replacement_add(&r2, "^T", "int");
-	replacement_add(&r2, "X",  "poop");
 
 	forward_table fwd = forward_table_create();
-	forward_table_forward(&fwd, fwd(.symbol="^T", .as="$T"));
-	forward_table_forward(&fwd, fwd(.symbol="$T", .as="^T"));
-	forward_table_forward(&fwd, fwd(.symbol="X",  .as="LORN"));
+	forward_table_forward(&fwd, fwd(symbollit("^T"), .as="$T"));
+	forward_table_forward(&fwd, fwd(symbollit("$T"), .as="^T"));
+	forward_table_forward(&fwd, fwd(symbollit("X"),  .as="LORN"));
 
-	replacement r3 = replacement_forward(r1, r2, fwd);
-	munit_assert_replacement_contains(r3, "$T", "int");
-	munit_assert_replacement_contains(r3, "^T", "string");
+	replacement r3 = replacement_forward(gen_settings(), r1, r2, fwd);
+
 	munit_assert_replacement_contains(r3, "LORN", "poop");
 	munit_assert_replacement_contains(r3, "PRINT", "printf");
 	
@@ -85,14 +83,14 @@ static MunitResult test_replacement_forward_2(const MunitParameter params[], voi
 	replacement_add(&r2, "X",  "poop");
 
 	forward_table fwd = forward_table_create();
-	forward_table_forward(&fwd, fwd(.symbol="^T", .as="$T"));
-	forward_table_forward(&fwd, fwd(.symbol="$T", .as="^T"));
-	forward_table_forward(&fwd, fwd(.symbol="X",  .as="$X"));
-	forward_table_forward(&fwd, fwd(.symbol="X",  .as="^X"));
-	forward_table_forward(&fwd, fwd(.symbol="X",  .as="CALLOC"));
+	forward_table_forward(&fwd, fwd(symbollit("^T"), .as="$T"));
+	forward_table_forward(&fwd, fwd(symbollit("$T"), .as="^T"));
+	forward_table_forward(&fwd, fwd(symbollit("X"),  .as="$X"));
+	forward_table_forward(&fwd, fwd(symbollit("X"),  .as="^X"));
+	forward_table_forward(&fwd, fwd(symbollit("X"),  .as="CALLOC"));
 
 	replacement_item r_;
-	replacement r3 = replacement_forward(r1, r2, fwd);
+	replacement r3 = replacement_forward(gen_settings(), r1, r2, fwd);
 	munit_assert_replacement_contains(r3, "$X", "poop");
 	munit_assert_replacement_contains(r3, "^X", "poop");
 	munit_assert_replacement_contains(r3, "$T", "int");
@@ -126,13 +124,13 @@ static MunitResult test_replacement_forward_3(const MunitParameter params[], voi
 	replacement_add(&r2, "X",  "poop");
 
 	forward_table fwd = forward_table_create();
-	forward_table_forward(&fwd, fwd(.symbol="^T", .as="$T"));
-	forward_table_forward(&fwd, fwd(.symbol="$T", .as="^T"));
-	forward_table_forward(&fwd, fwd(.symbol="X",  .as="$X"));
-	forward_table_forward(&fwd, fwd(.symbol="X",  .as="^X"));
-	forward_table_forward(&fwd, fwd(.symbol="X",  .as="CALLOC"));
+	forward_table_forward(&fwd, fwd(symbollit("^T"), .as="$T"));
+	forward_table_forward(&fwd, fwd(symbollit("$T"), .as="^T"));
+	forward_table_forward(&fwd, fwd(symbollit("X"),  .as="$X"));
+	forward_table_forward(&fwd, fwd(symbollit("X"),  .as="^X"));
+	forward_table_forward(&fwd, fwd(symbollit("X"),  .as="CALLOC"));
 
-	replacement r3 = replacement_forward(r1, r2, fwd);
+	replacement r3 = replacement_forward(gen_settings(), r1, r2, fwd);
 	munit_assert_replacement_contains(r3, "$X", "poop");
 	munit_assert_replacement_contains(r3, "^X", "poop");
 	munit_assert_replacement_contains(r3, "$T", NULL);

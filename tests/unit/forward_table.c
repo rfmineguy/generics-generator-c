@@ -14,13 +14,13 @@ static MunitResult test_forward_table_create(const MunitParameter params[], void
 static MunitResult test_forward_table_forward(const MunitParameter params[], void *userdata) {
 	forward_table fwd_table = forward_table_create();
 	
-	forward_table_forward(&fwd_table, fwd(.symbol="$T", .as="$T"));
-	forward_table_forward(&fwd_table, fwd(.symbol="^T", .as="^T"));
+	forward_table_forward(&fwd_table, fwd(symbollit("$T"), .as="$T"));
+	forward_table_forward(&fwd_table, fwd(symbollit("^T"), .as="^T"));
 
 	munit_assert_int(fwd_table.fwd_items_count, ==, 2);
-	munit_assert_string_equal(fwd_table.fwd_items[0].symbol, "$T");
+	munit_assert_string_equal(fwd_table.fwd_items[0].normal.symbol, "$T");
 	munit_assert_string_equal(fwd_table.fwd_items[0].as,     "$T");
-	munit_assert_string_equal(fwd_table.fwd_items[1].symbol, "^T");
+	munit_assert_string_equal(fwd_table.fwd_items[1].normal.symbol, "^T");
 	munit_assert_string_equal(fwd_table.fwd_items[1].as,     "^T");
 
 	forward_table_free(&fwd_table);

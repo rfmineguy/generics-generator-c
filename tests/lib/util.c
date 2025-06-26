@@ -1,20 +1,21 @@
 #include "util.h"
-#include "../../gengen.h"
+#undef GENGEN_IMPLEMENTATION
+#include "../../gengen2.h"
 
 char* read_file_(const char* filepath) {
 	FILE* f = fopen(filepath, "r");
-	assert(f, {
+	assert_(f, {
 		fprintf(stderr, "Failed to open '%s'\n", filepath);
 	});
 	fseek(f, 0, SEEK_END);
 	long size = ftell(f);
-	assert(size != -1, {
+	assert_(size != -1, {
 		fprintf(stderr, "Failed to ftell file '%s'. Reason: %s\n", filepath, strerror(errno));
 	})
 	fseek(f, 0, SEEK_SET);
 
 	char* buf = (char*)malloc((size_t)size + 1);
-	assert(fread(buf, 1, (unsigned long)size, f) == size, { 
+	assert_(fread(buf, 1, (unsigned long)size, f) == size, { 
 		fclose(f);
 		free(buf);
 		fprintf(stderr, "Failed to read '%s'\n", filepath); 

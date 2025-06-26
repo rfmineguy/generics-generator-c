@@ -1,14 +1,13 @@
 #ifndef GENERATOR_TEST_C
 #define GENERATOR_TEST_C
 #include "alltests.h"
-#include "../../gengen.h"
 #include "../lib/util.h"
 #include <unistd.h>
 
 #define LINKEDLIST "linkedlist"
 #define QUEUE "queue"
 
-MunitResult test_generator_linkedlist_string(const MunitParameter params[], void *userdata) {
+static MunitResult test_generator_linkedlist_string(const MunitParameter params[], void *userdata) {
 	ctemplate linkedlist = template_create(LINKEDLIST);
 	template_addfile       (&linkedlist, "linked_list.htpl", "linked_list_$T.h");
 	template_addfile       (&linkedlist, "linked_list.ctpl", "linked_list_$T.c");
@@ -23,7 +22,7 @@ MunitResult test_generator_linkedlist_string(const MunitParameter params[], void
 	replacement_add(&ll_int, "$T", "string");
 	replacement_add(&ll_int, "^T", "const char*");
 
-	generator_run(settings_custom(.search_paths=paths("templates"), .outdir="output"), linkedlist, ll_int);
+	generator_run(gen_settings(.search_paths=paths("templates"), .outdir="output"), linkedlist, ll_int);
 
 	munit_assert_file_exists("output/linked_list_string.h");
 	munit_assert_file_exists("output/linked_list_string.c");
@@ -37,7 +36,7 @@ MunitResult test_generator_linkedlist_string(const MunitParameter params[], void
 	return MUNIT_OK;
 }
 
-MunitResult test_generator_linkedlist_long(const MunitParameter params[], void *userdata) {
+static MunitResult test_generator_linkedlist_long(const MunitParameter params[], void *userdata) {
 	ctemplate linkedlist = template_create(LINKEDLIST);
 	template_addfile       (&linkedlist, "linked_list.htpl", "linked_list_$T.h");
 	template_addfile       (&linkedlist, "linked_list.ctpl", "linked_list_$T.c");
@@ -52,7 +51,7 @@ MunitResult test_generator_linkedlist_long(const MunitParameter params[], void *
 	replacement_add(&ll_age, "$T", "age");
 	replacement_add(&ll_age, "^T", "long");
 
-	generator_run(settings_custom(.search_paths=paths("templates"), .outdir="output"), linkedlist, ll_age);
+	generator_run(gen_settings(.search_paths=paths("templates"), .outdir="output"), linkedlist, ll_age);
 
 	munit_assert_file_exists("output/linked_list_age.h");
 	munit_assert_file_exists("output/linked_list_age.c");
@@ -66,7 +65,7 @@ MunitResult test_generator_linkedlist_long(const MunitParameter params[], void *
 	return MUNIT_OK;
 }
 
-MunitResult test_generator_linkedlist_vec2(const MunitParameter params[], void *userdata) {
+static MunitResult test_generator_linkedlist_vec2(const MunitParameter params[], void *userdata) {
 	ctemplate linkedlist = template_create(LINKEDLIST);
 	template_addfile       (&linkedlist, "linked_list.htpl", "linked_list_$T.h");
 	template_addfile       (&linkedlist, "linked_list.ctpl", "linked_list_$T.c");
@@ -81,7 +80,7 @@ MunitResult test_generator_linkedlist_vec2(const MunitParameter params[], void *
 	replacement_add(&ll_vec2, "$T", "vec2");
 	replacement_add(&ll_vec2, "^T", "vector2");
 
-	generator_run(settings_custom(.search_paths=paths("templates"), .outdir="output"), linkedlist, ll_vec2);
+	generator_run(gen_settings(.search_paths=paths("templates"), .outdir="output"), linkedlist, ll_vec2);
 
 	munit_assert_file_exists("output/linked_list_vec2.h");
 	munit_assert_file_exists("output/linked_list_vec2.c");
@@ -95,7 +94,7 @@ MunitResult test_generator_linkedlist_vec2(const MunitParameter params[], void *
 	return MUNIT_OK;
 }
 
-MunitResult test_generator_queue_vec3(const MunitParameter params[], void *userdata) {
+static MunitResult test_generator_queue_vec3(const MunitParameter params[], void *userdata) {
 	ctemplate linkedlist = template_create(LINKEDLIST);
 	template_addfile       (&linkedlist, "linked_list.htpl", "linked_list_$T.h");
 	template_addfile       (&linkedlist, "linked_list.ctpl", "linked_list_$T.c");
@@ -117,27 +116,27 @@ MunitResult test_generator_queue_vec3(const MunitParameter params[], void *userd
 	template_addreplacement(&queue, "HEADER", "stdint.h");
 
 	forward_table fwd_q_ll = forward_table_create();
-	forward_table_forward(&fwd_q_ll, fwd(.symbol="$T", .as="$T"));
-	forward_table_forward(&fwd_q_ll, fwd(.symbol="^T", .as="^T"));
-	template_adddep(&queue, linkedlist, fwd_q_ll);
+	forward_table_forward(&fwd_q_ll, fwd(symbollit("$T"), .as="$T"));
+	forward_table_forward(&fwd_q_ll, fwd(symbollit("^T"), .as="^T"));
+	template_adddep(&queue, linkedlist, fwd_q_ll, dep_settings(.embed = true));
 
 	replacement q_vec2 = replacement_create();
 	replacement_add(&q_vec2, "$T", "vector3");
 	replacement_add(&q_vec2, "^T", "vec3");
 
-	generator_run(settings_custom(.verbose = false, .search_paths=paths("templates"), .outdir="output"), queue, q_vec2);
+	generator_run(gen_settings(.verbose = false, .search_paths=paths("templates"), .outdir="output"), queue, q_vec2);
 
-	munit_assert_file_exists("output/linked_list_vector3.h");
-	munit_assert_file_exists("output/linked_list_vector3.c");
+	// munit_assert_file_exists("output/linked_list_vector3.h");
+	// munit_assert_file_exists("output/linked_list_vector3.c");
 
 	munit_assert_file_exists("output/queue_vector3.h");
 	munit_assert_file_exists("output/queue_vector3.c");
 
-	munit_assert_int(util_count_symbols("templates/queue.htpl", "$T"), ==, util_count_symbols("output/queue_vector3.h", "vector3"));
-	munit_assert_int(util_count_symbols("templates/queue.htpl", "^T"), ==, util_count_symbols("output/queue_vector3.h", "vec3"));
+	// munit_assert_int(util_count_symbols("templates/queue.htpl", "$T"), ==, util_count_symbols("output/queue_vector3.h", "vector3"));
+	// munit_assert_int(util_count_symbols("templates/queue.htpl", "^T"), ==, util_count_symbols("output/queue_vector3.h", "vec3"));
 
-	munit_assert_int(util_count_symbols("templates/linked_list.htpl", "$T"), ==, util_count_symbols("output/linked_list_vector3.h", "vector3"));
-	munit_assert_int(util_count_symbols("templates/linked_list.htpl", "^T"), ==, util_count_symbols("output/linked_list_vector3.h", "vec3"));
+	munit_assert_int(util_count_symbols("templates/linked_list.htpl", "$T") + util_count_symbols("templates/queue.htpl", "$T"), ==, util_count_symbols("output/queue_vector3.h", "vector3"));
+	munit_assert_int(util_count_symbols("templates/linked_list.htpl", "^T") + util_count_symbols("templates/queue.htpl", "^T"), ==, util_count_symbols("output/queue_vector3.h", "vec3"));
 
 	template_free(&linkedlist);
 	template_free(&queue);
